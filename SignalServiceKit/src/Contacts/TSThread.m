@@ -50,8 +50,6 @@ ConversationColorName const kConversationColorName_Default = ConversationColorNa
 @property (nonatomic, copy, nullable) NSString *messageDraft;
 @property (atomic, nullable) NSDate *mutedUntilDate;
 
-@property (atomic) TSThreadFriendRequestState friendRequestState;
-
 // DEPRECATED - not used since migrating to sortId
 // but keeping these properties around to ease any pain in the back-forth
 // migration while testing. Eventually we can safely delete these as they aren't used anywhere.
@@ -86,9 +84,6 @@ ConversationColorName const kConversationColorName_Default = ConversationColorNa
     if (self) {
         _creationDate    = [NSDate date];
         _messageDraft    = nil;
-        
-        // We are initially not friends
-        _friendRequestState = TSThreadFriendRequestStateNone;
 
         NSString *_Nullable contactId = self.contactIdentifier;
         if (contactId.length > 0) {
@@ -159,7 +154,7 @@ ConversationColorName const kConversationColorName_Default = ConversationColorNa
 - (void)saveWithTransaction:(YapDatabaseReadWriteTransaction *)transaction
 {
     [super saveWithTransaction:transaction];
-
+    
     [SSKPreferences setHasSavedThreadWithValue:YES transaction:transaction];
 }
 
@@ -699,33 +694,26 @@ ConversationColorName const kConversationColorName_Default = ConversationColorNa
                              }];
 }
 
-# pragma mark - Loki Friend Request
+# pragma mark - Loki Friend Request Handling
 
-- (BOOL)isFriend
+- (TSThreadFriendRequestStatus)getFriendRequestStatus
 {
-    return _friendRequestState == TSThreadFriendRequestStateFriends;
+    __block TSThreadFriendRequestStatus friendRequestStatus;
+    [self.dbReadConnection readWithBlock:^(YapDatabaseReadTransaction *transaction) {
+        friendRequestStatus = [self getFriendRequestStatusWithTransaction:transaction];
+    }];
+    return friendRequestStatus;
 }
 
-- (BOOL)isPendingFriendRequest
+- (TSThreadFriendRequestStatus)getFriendRequestStatusWithTransaction:(YapDatabaseReadTransaction *)transaction
 {
-    return (
-            _friendRequestState == TSThreadFriendRequestStatePendingSend ||
-            _friendRequestState == TSThreadFriendRequestStateRequestSent ||
-            _friendRequestState == TSThreadFriendRequestStateRequestReceived
-    );
-}
-
-- (BOOL)hasSentFriendRequest
-{
-    return (
-            _friendRequestState == TSThreadFriendRequestStateRequestSent ||
-            _friendRequestState == TSThreadFriendRequestStateRequestExpired
-    );
-}
-
-- (BOOL)hasReceivedFriendRequest
-{
-    return _friendRequestState == TSThreadFriendRequestStateRequestReceived;
+    YapDatabaseViewTransaction *interactions = [transaction ext:TSMessageDatabaseViewExtensionName];
+    NSUInteger interactionCount = [interactions numberOfItemsInGroup:self.uniqueId];
+    if (interactionCount == 0) { return TSThreadFriendRequestStatusNone; }
+    if (interactionCount >= 2) { return TSThreadFriendRequestStatusFriends; }
+    TSInteraction *interaction = [interactions firstObjectInGroup:self.uniqueId];
+    BOOL isIncomingMessage = interaction.interactionType == OWSInteractionType_IncomingMessage;
+    return isIncomingMessage ? TSThreadFriendRequestStatusRequestReceived : TSThreadFriendRequestStatusRequestSent;
 }
 
 @end

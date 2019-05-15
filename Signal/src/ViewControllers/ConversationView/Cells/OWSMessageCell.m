@@ -115,16 +115,6 @@ NS_ASSUME_NONNULL_BEGIN
     return self.viewItem.interaction.interactionType == OWSInteractionType_OutgoingMessage;
 }
 
-- (TSThreadFriendRequestState)friendRequestState {
-    return self.isIncoming ? TSThreadFriendRequestStateRequestReceived : TSThreadFriendRequestStateRequestSent;
-//    return self.message.thread.friendRequestState;
-}
-
-- (BOOL)isFriendRequest {
-    return YES;
-    // return self.friendRequestState == TSThreadFriendRequestStateRequestSent || self.friendRequestState == TSThreadFriendRequestStateRequestReceived;
-}
-
 - (BOOL)shouldHaveSendFailureBadge
 {
     if (![self.viewItem.interaction isKindOfClass:[TSOutgoingMessage class]]) {
@@ -132,6 +122,18 @@ NS_ASSUME_NONNULL_BEGIN
     }
     TSOutgoingMessage *outgoingMessage = (TSOutgoingMessage *)self.viewItem.interaction;
     return outgoingMessage.messageState == TSOutgoingMessageStateFailed;
+}
+
+- (TSThreadFriendRequestStatus)friendRequestStatus
+{
+    return [self.message.thread getFriendRequestStatus];
+}
+
+- (BOOL)isFriendRequest
+{
+    TSThreadFriendRequestStatus friendRequestStatus = self.friendRequestStatus;
+    return friendRequestStatus == TSThreadFriendRequestStatusPendingSend || friendRequestStatus == TSThreadFriendRequestStatusRequestSent
+        || friendRequestStatus == TSThreadFriendRequestStatusRequestReceived;
 }
 
 #pragma mark - Load
@@ -217,9 +219,9 @@ NS_ASSUME_NONNULL_BEGIN
     }
     
     if (self.isFriendRequest) {
-        // At this point, self.friendRequestState should be either TSThreadFriendRequestStateRequestReceived,
-        // TSThreadFriendRequestStatePendingSend or TSThreadFriendRequestStateRequestSent
-        NSString *rawKind = self.friendRequestState == TSThreadFriendRequestStateRequestReceived ? @"incoming" : @"outgoing";
+        // At this point, self.friendRequestStatus should be either TSThreadFriendRequestStatusRequestReceived,
+        // TSThreadFriendRequestStatusPendingSend or TSThreadFriendRequestStatusRequestSent
+        NSString *rawKind = self.friendRequestStatus == TSThreadFriendRequestStatusRequestReceived ? @"incoming" : @"outgoing";
         self.friendRequestView = [[FriendRequestView alloc] initWithRawKind:rawKind];
         self.friendRequestView.message = self.message;
         self.friendRequestView.delegate = self.friendRequestViewDelegate;
@@ -371,7 +373,7 @@ NS_ASSUME_NONNULL_BEGIN
     }
 
     if (self.isFriendRequest) {
-        cellSize.height += [FriendRequestView calculateHeightWithMessage:(TSMessage *)self.viewItem.interaction conversationStyle:self.conversationStyle];
+        cellSize.height += [FriendRequestView calculateHeightWithMessage:self.message conversationStyle:self.conversationStyle];
     }
     
     cellSize = CGSizeCeil(cellSize);

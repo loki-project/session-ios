@@ -1020,6 +1020,10 @@ NS_ASSUME_NONNULL_BEGIN
     /// Loki: Set our session reset state
     thread.sessionResetState = TSContactThreadSessionResetStateRequestReceived;
     [thread saveWithTransaction:transaction];
+    
+    /// Loki: Send an empty message to trigger the session reset code for both parties
+    TSOutgoingMessage *emptyMessage = [TSOutgoingMessage createEmptyOutgoingMessageInThread:thread];
+    [self.messageSenderJobQueue addMessage:emptyMessage transaction:transaction];
 
     OWSLogDebug(@"[Loki Session Reset] Session reset has been received from %@", envelope.source);
     
@@ -1657,7 +1661,7 @@ NS_ASSUME_NONNULL_BEGIN
         
         // If we were the ones to initiate the reset then we need to send back an empty message
         if (thread.sessionResetState == TSContactThreadSessionResetStateInitiated) {
-            TSOutgoingMessage *emptyMessage = [TSOutgoingMessage emptyOutgoingMessageInThread:thread];
+            TSOutgoingMessage *emptyMessage = [TSOutgoingMessage createEmptyOutgoingMessageInThread:thread];
             [self.messageSenderJobQueue addMessage:emptyMessage transaction:transaction];
         }
         

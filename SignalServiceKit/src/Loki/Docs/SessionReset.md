@@ -6,19 +6,19 @@ Since Signal uses a centralised server, creating sessions is easy as the prekeys
 The process is as follows:
 
 1. `A` deletes all their sessions and sends `End Session` to `B`
-        - `A` contacts the server and creates a new session
+    - `A` contacts the server and creates a new session
 2. `B` Gets this message and deletes all sessions.
 3. `B` Sends a message with a newly created session
-        - `B` contacted server and established this
+    - `B` contacted server and established this
 4. `A` and `B` now have the same sessions so they can delete any archived ones.
 
 ## Loki
 Loki doesn't have a centralised server and thus we need to change the process above with something similar. 
 
 We have to introduce a session reset state `sessionState` which can take the following states:
-    - `none`: No session reset is in progress
-    - `initiated`: We have initiated the session reset
-    - `received`: We have received a session reset from the other user
+- `none`: No session reset is in progress
+- `initiated`: We have initiated the session reset
+- `received`: We have received a session reset from the other user
 
 The new process is as follows:
 

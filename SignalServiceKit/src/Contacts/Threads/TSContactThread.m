@@ -15,12 +15,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 NSString *const TSContactThreadPrefix = @"c";
 
-@interface TSContactThread ()
-
-@property (atomic) TSContactThreadSessionResetState sessionResetState;
-
-@end
-
 @implementation TSContactThread
 
 - (instancetype)initWithContactId:(NSString *)contactId {

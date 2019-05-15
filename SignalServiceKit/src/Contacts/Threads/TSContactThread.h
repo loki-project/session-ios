@@ -21,7 +21,7 @@ extern NSString *const TSContactThreadPrefix;
 @interface TSContactThread : TSThread
 
 // Loki: The current session reset state with this thread
-@property (atomic, readonly) TSContactThreadSessionResetState sessionResetState;
+@property (atomic) TSContactThreadSessionResetState sessionResetState;
 
 @property (nonatomic) BOOL hasDismissedOffers;
 

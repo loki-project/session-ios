@@ -15,6 +15,12 @@ NS_ASSUME_NONNULL_BEGIN
 
 NSString *const TSContactThreadPrefix = @"c";
 
+@interface TSContactThread ()
+
+@property (atomic) TSContactThreadSessionResetState sessionResetState;
+
+@end
+
 @implementation TSContactThread
 
 - (instancetype)initWithContactId:(NSString *)contactId {
@@ -23,6 +29,9 @@ NSString *const TSContactThreadPrefix = @"c";
     OWSAssertDebug(contactId.length > 0);
 
     self = [super initWithUniqueId:uniqueIdentifier];
+    
+    // No session reset ongoing
+    _sessionResetState = TSContactThreadSessionResetStateNone;
 
     return self;
 }

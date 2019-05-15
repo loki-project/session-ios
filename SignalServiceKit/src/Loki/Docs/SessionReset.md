@@ -44,11 +44,11 @@ The new process is as follows:
 - If `CS != PS` then sessions were changed.
     - If `sessionState == received` then it means that the sender used an old session to contact us. We need to wait for them to use the new one.
         - Archive `CS` and set the session to `PS`
-        - If `sessionState == initiated` then it means that the sender acknowledged our session reset and sent a message with a new session
-            - Delete all session except `CS`
-            - `sessionState = none`
-            - Send an empty message to confirm session adoption
-            - We can show `Session reset done`
+    - If `sessionState == initiated` then it means that the sender acknowledged our session reset and sent a message with a new session
+        - Delete all session except `CS`
+        - `sessionState = none`
+        - Send an empty message to confirm session adoption
+        - We can show `Session reset done`
 - If `CS == PS` then sessions were the same.
     - If `sessionState == received` then it means that the new session we created is the one the sender used for sending message. We have successfully adopted the new session.
     - Delete all sessions except `PS`

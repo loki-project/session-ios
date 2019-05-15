@@ -1,8 +1,10 @@
 /// Loki: Refer to Docs/SessionReset.md for explanations
 
 #import "SessionCipher+Loki.h"
-#import "TSContactThread.h"
 #import "NSNotificationCenter+OWS.h"
+#import "PreKeyWhisperMessage.h"
+#import "OWSPrimaryStorage+Loki.h"
+#import "TSContactThread.h"
 #import <YapDatabase/YapDatabase.h>
 
 NSString *const kNSNotificationName_SessionAdopted = @"kNSNotificationName_SessionAdopted";
@@ -14,6 +16,7 @@ NSString *const kNSNotificationKey_ContactPubKey = @"kNSNotificationKey_ContactP
 @property (nonatomic, readonly) int deviceId;
 
 @property (nonatomic, readonly) id<SessionStore> sessionStore;
+@property (nonatomic, readonly) id<PreKeyStore> prekeyStore;
 
 @end
 
@@ -26,6 +29,11 @@ NSString *const kNSNotificationKey_ContactPubKey = @"kNSNotificationKey_ContactP
     
     // While decrypting our state may change internally
     NSData *plainText = [self throws_decrypt:whisperMessage protocolContext:protocolContext];
+    
+    // Loki: Verify incoming friend request messages
+    if (!state) {
+        [self throws_verifyFriendRequestAcceptPreKeyForMessage:whisperMessage protocolContext:protocolContext];
+    }
    
     // Loki: Handle any session resets
     [self handleSessionReset:whisperMessage previousState:state protocolContext:protocolContext];
@@ -33,6 +41,7 @@ NSString *const kNSNotificationKey_ContactPubKey = @"kNSNotificationKey_ContactP
     return plainText;
 }
 
+/// Get the current session state
 - (SessionState *_Nullable)getCurrentState:(nullable id)protocolContext {
     SessionRecord *record = [self.sessionStore loadSession:self.recipientId deviceId:self.deviceId protocolContext:protocolContext];
     SessionState *state = record.sessionState;
@@ -45,16 +54,16 @@ NSString *const kNSNotificationKey_ContactPubKey = @"kNSNotificationKey_ContactP
     return state;
 }
 
+/// Handle any loki session reset stuff
 - (void)handleSessionReset:(id<CipherMessage>)whisperMessage
              previousState:(SessionState *_Nullable)previousState
            protocolContext:(nullable id)protocolContext
 {
     // Don't bother doing anything if we didn't have a session before
     if (!previousState) {
-        // TODO: If we have a prekey bundle then verify the friend request here
         return;
     }
-
+    
     OWSAssertDebug([protocolContext isKindOfClass:[YapDatabaseReadWriteTransaction class]]);
     YapDatabaseReadWriteTransaction *transaction = protocolContext;
     
@@ -94,6 +103,7 @@ NSString *const kNSNotificationKey_ContactPubKey = @"kNSNotificationKey_ContactP
     }
 }
 
+/// Send a notification about a new session being adopted
 - (void)notifySessionAdopted
 {
     [[NSNotificationCenter defaultCenter]
@@ -104,6 +114,7 @@ NSString *const kNSNotificationKey_ContactPubKey = @"kNSNotificationKey_ContactP
                 }];
 }
 
+/// Delete all other sessions except the given one
 - (void)deleteAllSessionsExcept:(SessionState *)state protocolContext:(nullable id)protocolContext
 {
     SessionRecord *record = [self.sessionStore loadSession:self.recipientId deviceId:self.deviceId protocolContext:protocolContext];
@@ -116,6 +127,7 @@ NSString *const kNSNotificationKey_ContactPubKey = @"kNSNotificationKey_ContactP
                     protocolContext:protocolContext];
 }
 
+/// Set the given session as the active one while archiving the old one
 - (void)restoreSession:(SessionState *)state protocolContext:(nullable id)protocolContext
 {
     SessionRecord *record = [self.sessionStore loadSession:self.recipientId deviceId:self.deviceId protocolContext:protocolContext];
@@ -135,6 +147,35 @@ NSString *const kNSNotificationKey_ContactPubKey = @"kNSNotificationKey_ContactP
                            deviceId:self.deviceId
                             session:record
                     protocolContext:protocolContext];
+}
+
+/// Check that we have matching prekeys in the case of a `PreKeyWhisperMessage`
+/// This is so that we don't trigger a false friend request accept on unknown contacts
+- (void)throws_verifyFriendRequestAcceptPreKeyForMessage:(id<CipherMessage>)whisperMessage protocolContext:(nullable id)protocolContext {
+    OWSAssertDebug([protocolContext isKindOfClass:[YapDatabaseReadTransaction class]]);
+    YapDatabaseReadTransaction *transaction = protocolContext;
+    
+    /// We only want to look at `PreKeyWhisperMessage`
+    if (![whisperMessage isKindOfClass:[PreKeyWhisperMessage class]]) {
+        return;
+    }
+
+    /// We need the primary storage to access contact prekeys
+    if (![self.prekeyStore isKindOfClass:[OWSPrimaryStorage class]]) {
+        return;
+    }
+    
+    PreKeyWhisperMessage *preKeyMessage = whisperMessage;
+    OWSPrimaryStorage *primaryStorage = self.prekeyStore;
+    
+    PreKeyRecord *_Nullable storedPreKey = [primaryStorage getPreKeyForContact:self.recipientId transaction:transaction];
+    if(!storedPreKey) {
+        OWSRaiseException(@"LokiInvalidPreKey", @"Received a friend request from a pubkey for which no prekey bundle was created");
+    }
+    
+    if (storedPreKey.Id != preKeyMessage.prekeyID) {
+        OWSRaiseException(@"LokiPreKeyIdsDontMatch", @"Received a preKeyWhisperMessage (friend request accept) from an unknown source");
+    }
 }
 
 @end

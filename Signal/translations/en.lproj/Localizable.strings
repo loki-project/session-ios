@@ -2578,3 +2578,6 @@
 "New Message" = "New Message";
 "Secure session reset in progress" = "Secure session reset in progress";
 "Secure session reset done" = "Secure session reset done";
+"Session" = "Session";
+"You've declined %@'s friend request" = "You've declined %@'s friend request";
+"You've accepted %@'s friend request" = "You've accepted %@'s friend request";

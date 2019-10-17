@@ -333,7 +333,6 @@
     [avatarView autoSetDimension:ALDimensionHeight toSize:kLargeAvatarSize];
     avatarView.contactID = OWSIdentityManager.sharedManager.identityKeyPair.hexEncodedPublicKey;
 
-    /**
     if (!localProfileAvatarImage) {
         UIImage *cameraImage = [UIImage imageNamed:@"settings-avatar-camera"];
         UIImageView *cameraImageView = [[UIImageView alloc] initWithImage:cameraImage];
@@ -341,7 +340,6 @@
         [cameraImageView autoPinTrailingToEdgeOfView:avatarView];
         [cameraImageView autoPinEdge:ALEdgeBottom toEdge:ALEdgeBottom ofView:avatarView];
     }
-     */
 
     UIView *nameView = [UIView containerView];
     [cell.contentView addSubview:nameView];

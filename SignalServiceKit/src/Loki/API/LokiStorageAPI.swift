@@ -198,4 +198,50 @@ public final class LokiStorageAPI : LokiDotNetAPI {
     public static func objc_uploadAttachment(_ attachment: TSAttachmentStream, attachmentID: String) -> AnyPromise {
         return AnyPromise.from(uploadAttachment(attachment, attachmentID: attachmentID))
     }
+    
+    // MARK: Profile Pictures (Public API)
+    public static func setProfilePicture(_ profilePicture: Data) -> Promise<String> {
+        return Promise<String>() { seal in
+            getAuthToken(for: server).done { token in
+                let url = "\(server)/files"
+                let parameters: JSON = [ "type" : attachmentType, "Content-Type" : "application/binary" ]
+                var error: NSError?
+                var request = AFHTTPRequestSerializer().multipartFormRequest(withMethod: "POST", urlString: url, parameters: parameters, constructingBodyWith: { formData in
+                    formData.appendPart(withFileData: profilePicture, name: "content", fileName: UUID().uuidString, mimeType: "application/binary")
+                }, error: &error)
+                request.addValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+                if let error = error {
+                    print("[Loki] Couldn't upload profile picture due to error: \(error).")
+                    throw error
+                }
+                let task = AFURLSessionManager(sessionConfiguration: .default).uploadTask(withStreamedRequest: request as URLRequest, progress: nil, completionHandler: { response, responseObject, error in
+                    if let error = error {
+                        print("[Loki] Couldn't upload profile picture due to error: \(error).")
+                        return seal.reject(error)
+                    }
+                    let statusCode = (response as! HTTPURLResponse).statusCode
+                    let isSuccessful = (200...299) ~= statusCode
+                    guard isSuccessful else {
+                        print("[Loki] Couldn't upload profile picture.")
+                        return seal.reject(Error.generic)
+                    }
+                    guard let json = responseObject as? JSON, let data = json["data"] as? JSON, let downloadURL = data["url"] as? String else {
+                        print("[Loki] Couldn't parse profile picture from: \(responseObject).")
+                        return seal.reject(Error.parsingFailed)
+                    }
+                    return seal.fulfill(downloadURL)
+                })
+                task.resume()
+            }.catch { error in
+                print("[Loki] Couldn't upload profile picture.")
+                seal.reject(error)
+            }
+        }
+    }
+    
+    // MARK: Profile Pictures (Public Obj-C API)
+    @objc(setProfilePicture:)
+    public static func objc_setProfilePicture(_ profilePicture: Data) -> AnyPromise {
+        return AnyPromise.from(setProfilePicture(profilePicture))
+    }
 }

@@ -2647,3 +2647,6 @@
 "Enter the URL of the public chat you'd like to join. The Loki Public Chat URL is https://chat.lokinet.org." = "Enter the URL of the public chat you'd like to join. The Loki Public Chat URL is https://chat.lokinet.org.";
 "Connecting..." = "Connecting...";
 "Couldn't Connect" = "Couldn't Connect";
+"Profile Picture" = "Profile Picture";
+"Set Profile Picture" = "Set Profile Picture";
+"Clear Profile Picture" = "Clear Profile Picture";

@@ -415,7 +415,7 @@ const CGFloat kIconViewLength = 24;
                                  }]];
     /*
     }
-
+    */
     if (!isNoteToSelf && !self.isGroupThread && self.thread.hasSafetyNumbers) {
         [mainSection
             addItem:[OWSTableItem
@@ -432,7 +432,7 @@ const CGFloat kIconViewLength = 24;
                             [weakSelf showVerificationView];
                         }]];
     }
-
+    /*
     if (isNoteToSelf) {
         // Skip the profile whitelist.
     } else if ([self.profileManager isThreadInProfileWhitelist:self.thread]) {

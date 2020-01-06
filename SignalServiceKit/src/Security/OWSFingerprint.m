@@ -318,6 +318,12 @@ static uint32_t const OWSFingerprintDefaultHashIterations = 5200;
         OWSLogError(@"Failed to create QR image from fingerprint text: %@", self.text);
         return nil;
     }
+    
+    // Invert the color of the safety number qrcode
+    filter = [CIFilter filterWithName:@"CIColorInvert"];
+    [filter setDefaults];
+    [filter setValue:ciImage forKey:@"inputImage"];
+    ciImage = [filter outputImage];
 
     // UIImages backed by a CIImage won't render without antialiasing, so we convert the backign image to a CGImage,
     // which can be scaled crisply.

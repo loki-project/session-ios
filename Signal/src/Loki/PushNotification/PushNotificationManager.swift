@@ -26,7 +26,7 @@ class PushNotificationManager: NSObject {
         print("Device Token: (\(deviceToken))")
         /** send token to Loki centralized server  **/
         let parameters = [ "token" : deviceToken ]
-        let url = URL(string: "http://88.99.14.72:5000/register")!
+        let url = URL(string: "https://live.apns.getsession.org/register")!
         let request = TSRequest(url: url, method: "POST", parameters: parameters)
         request.allHTTPHeaderFields = [ "Content-Type" : "application/json"]
         TSNetworkManager.shared().makeRequest(

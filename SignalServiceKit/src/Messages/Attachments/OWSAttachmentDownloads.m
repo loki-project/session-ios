@@ -285,7 +285,7 @@ typedef void (^AttachmentDownloadFailure)(NSError *error);
             self.downloadingJobMap[job.attachmentPointer.uniqueId] = job;
         }
 
-        [self.primaryStorage.dbReadWriteConnection readWriteWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
+        [LKStorage writeWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
             job.attachmentPointer.state = TSAttachmentPointerStateDownloading;
             [job.attachmentPointer saveWithTransaction:transaction];
 
@@ -298,14 +298,13 @@ typedef void (^AttachmentDownloadFailure)(NSError *error);
             success:^(TSAttachmentStream *attachmentStream) {
                 OWSLogVerbose(@"Attachment download succeeded.");
 
-                [self.primaryStorage.dbReadWriteConnection
-                    readWriteWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
-                        [attachmentStream saveWithTransaction:transaction];
+                [LKStorage writeWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
+                    [attachmentStream saveWithTransaction:transaction];
 
-                        if (job.message) {
-                            [job.message touchWithTransaction:transaction];
-                        }
-                    }];
+                    if (job.message) {
+                        [job.message touchWithTransaction:transaction];
+                    }
+                }];
 
                 job.success(attachmentStream);
 
@@ -318,16 +317,15 @@ typedef void (^AttachmentDownloadFailure)(NSError *error);
             failure:^(NSError *error) {
                 OWSLogError(@"Attachment download failed with error: %@", error);
 
-                [self.primaryStorage.dbReadWriteConnection
-                    readWriteWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
-                        job.attachmentPointer.mostRecentFailureLocalizedText = error.localizedDescription;
-                        job.attachmentPointer.state = TSAttachmentPointerStateFailed;
-                        [job.attachmentPointer saveWithTransaction:transaction];
+                [LKStorage writeWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
+                    job.attachmentPointer.mostRecentFailureLocalizedText = error.localizedDescription;
+                    job.attachmentPointer.state = TSAttachmentPointerStateFailed;
+                    [job.attachmentPointer saveWithTransaction:transaction];
 
-                        if (job.message) {
-                            [job.message touchWithTransaction:transaction];
-                        }
-                    }];
+                    if (job.message) {
+                        [job.message touchWithTransaction:transaction];
+                    }
+                }];
 
                 @synchronized(self) {
                     [self.downloadingJobMap removeObjectForKey:job.attachmentPointer.uniqueId];

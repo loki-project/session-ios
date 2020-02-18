@@ -980,7 +980,7 @@ NS_ASSUME_NONNULL_BEGIN
              attachmentHandler:^(NSArray<TSAttachmentStream *> *attachmentStreams) {
                 OWSAssertDebug(attachmentStreams.count == 1);
                 TSAttachmentStream *attachmentStream = attachmentStreams.firstObject;
-                [self.dbConnection readWriteWithBlock:^(
+                [LKStorage writeWithBlock:^(
                                                         YapDatabaseReadWriteTransaction *transaction) {
                     TSGroupThread *_Nullable groupThread =
                     [TSGroupThread threadWithGroupId:dataMessage.group.id
@@ -1567,8 +1567,8 @@ NS_ASSUME_NONNULL_BEGIN
                 
                 // Loki: Cache the user hex encoded public key (for mentions)
                 dispatch_async(dispatch_get_main_queue(), ^{
-                    [OWSPrimaryStorage.sharedManager.dbReadConnection readWithBlock:^(YapDatabaseReadTransaction *transaction) {
-                        [LKAPI populateUserHexEncodedPublicKeyCacheIfNeededFor:oldGroupThread.uniqueId in:transaction];
+                    [LKStorage writeWithBlock:^(YapDatabaseReadTransaction *transaction) {
+                        [LKAPI populateUserHexEncodedPublicKeyCacheIfNeededFor:oldGroupThread.uniqueId];
                         [LKAPI cache:incomingMessage.authorId for:oldGroupThread.uniqueId];
                     }];
                 });
@@ -1876,7 +1876,7 @@ NS_ASSUME_NONNULL_BEGIN
         // * Failures don't interfere with successes.
         [self.attachmentDownloads downloadAttachmentPointer:attachmentPointer
             success:^(NSArray<TSAttachmentStream *> *attachmentStreams) {
-                [self.dbConnection readWriteWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
+                [LKStorage writeWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
                     TSAttachmentStream *_Nullable attachmentStream = attachmentStreams.firstObject;
                     OWSAssertDebug(attachmentStream);
                     if (attachmentStream && incomingMessage.quotedMessage.thumbnailAttachmentPointerId.length > 0 &&

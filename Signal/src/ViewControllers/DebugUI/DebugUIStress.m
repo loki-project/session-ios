@@ -495,7 +495,7 @@ NS_ASSUME_NONNULL_BEGIN
 {
     OWSAssertDebug(message);
 
-    [self.dbConnection readWriteWithBlock:^(YapDatabaseReadWriteTransaction *_Nonnull transaction) {
+    [LKStorage writeWithBlock:^(YapDatabaseReadWriteTransaction *_Nonnull transaction) {
         [self.messageSenderJobQueue addMessage:message transaction:transaction];
     }];
 }
@@ -528,18 +528,17 @@ NS_ASSUME_NONNULL_BEGIN
 + (void)hallucinateTwinGroup:(TSGroupThread *)groupThread
 {
     __block TSGroupThread *thread;
-    [OWSPrimaryStorage.dbReadWriteConnection
-        readWriteWithBlock:^(YapDatabaseReadWriteTransaction *_Nonnull transaction) {
-            // TODO: Figure out if this is correct
-            TSGroupModel *groupModel =
-                [[TSGroupModel alloc] initWithTitle:[groupThread.groupModel.groupName stringByAppendingString:@" Copy"]
-                                          memberIds:groupThread.groupModel.groupMemberIds
-                                              image:groupThread.groupModel.groupImage
-                                            groupId:[Randomness generateRandomBytes:kGroupIdLength]
-                                          groupType:closedGroup
-                                           adminIds:groupThread.groupModel.groupAdminIds];
-            thread = [TSGroupThread getOrCreateThreadWithGroupModel:groupModel transaction:transaction];
-        }];
+    [LKStorage writeWithBlock:^(YapDatabaseReadWriteTransaction *_Nonnull transaction) {
+        // TODO: Figure out if this is correct
+        TSGroupModel *groupModel =
+            [[TSGroupModel alloc] initWithTitle:[groupThread.groupModel.groupName stringByAppendingString:@" Copy"]
+                                      memberIds:groupThread.groupModel.groupMemberIds
+                                          image:groupThread.groupModel.groupImage
+                                        groupId:[Randomness generateRandomBytes:kGroupIdLength]
+                                      groupType:closedGroup
+                                       adminIds:groupThread.groupModel.groupAdminIds];
+        thread = [TSGroupThread getOrCreateThreadWithGroupModel:groupModel transaction:transaction];
+    }];
     OWSAssertDebug(thread);
 
     [SignalApp.sharedApp presentConversationForThread:thread animated:YES];
@@ -559,7 +558,7 @@ NS_ASSUME_NONNULL_BEGIN
     [recipientIds addObject:self.tsAccountManager.localNumber];
 
     __block TSGroupThread *thread;
-    [OWSPrimaryStorage.dbReadWriteConnection readWriteWithBlock:^(
+    [LKStorage writeWithBlock:^(
         YapDatabaseReadWriteTransaction *_Nonnull transaction) {
         // TODO: Figure out if this is correct
         TSGroupModel *groupModel = [[TSGroupModel alloc] initWithTitle:NSUUID.UUID.UUIDString

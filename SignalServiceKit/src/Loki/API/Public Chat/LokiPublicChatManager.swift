@@ -71,7 +71,7 @@ public final class LokiPublicChatManager : NSObject {
         let model = TSGroupModel(title: chat.displayName, memberIds: [userHexEncodedPublicKey!, chat.server], image: nil, groupId: LKGroupUtilities.getEncodedOpenGroupIDAsData(chat.id), groupType: .openGroup, adminIds: [])
         
         // Store the group chat mapping
-        self.storage.dbReadWriteConnection.readWrite { transaction in
+        Storage.write { transaction in
             let thread = TSGroupThread.getOrCreateThread(with: model, transaction: transaction)
            
             // Save the group chat
@@ -90,7 +90,7 @@ public final class LokiPublicChatManager : NSObject {
     }
     
     @objc func refreshChatsAndPollers() {
-        storage.dbReadConnection.read { transaction in
+        Storage.read { transaction in
             let newChats = LokiDatabaseUtilities.getAllPublicChats(in: transaction)
             
             // Remove any chats that don't exist in the database
@@ -118,7 +118,7 @@ public final class LokiPublicChatManager : NSObject {
         }
         
         // Remove the chat from the db
-        storage.dbReadWriteConnection.readWrite { transaction in
+        Storage.write { transaction in
             LokiDatabaseUtilities.removePublicChat(for: threadId, in: transaction)
         }
 

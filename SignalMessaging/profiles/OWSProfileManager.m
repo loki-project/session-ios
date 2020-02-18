@@ -542,7 +542,7 @@ typedef void (^ProfileManagerFailureBlock)(NSError *error);
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         NSMutableSet<NSString *> *whitelistedRecipientIds = [NSMutableSet new];
         NSMutableSet<NSData *> *whitelistedGroupIds = [NSMutableSet new];
-        [self.dbConnection readWithBlock:^(YapDatabaseReadTransaction *transaction) {
+        [LKStorage readWithBlock:^(YapDatabaseReadTransaction *transaction) {
             [whitelistedRecipientIds
                 addObjectsFromArray:[transaction allKeysInCollection:kOWSProfileManager_UserWhitelistCollection]];
 
@@ -695,7 +695,7 @@ typedef void (^ProfileManagerFailureBlock)(NSError *error);
             // Remove blocked users and groups from profile whitelist.
             //
             // This will always succeed.
-            [self.dbConnection readWriteWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
+            [LKStorage writeWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
                 [transaction removeObjectsForKeys:intersectingRecipientIds.allObjects
                                      inCollection:kOWSProfileManager_UserWhitelistCollection];
                 for (NSData *groupId in intersectingGroupIds) {
@@ -834,7 +834,7 @@ typedef void (^ProfileManagerFailureBlock)(NSError *error);
     }
 
     __block BOOL result = NO;
-    [self.dbConnection readWithBlock:^(YapDatabaseReadTransaction *transaction) {
+    [LKStorage readWithBlock:^(YapDatabaseReadTransaction *transaction) {
         NSNumber *_Nullable oldValue =
             [transaction objectForKey:recipientId inCollection:kOWSProfileManager_UserWhitelistCollection];
         result = (oldValue && oldValue.boolValue);
@@ -904,7 +904,7 @@ typedef void (^ProfileManagerFailureBlock)(NSError *error);
     NSString *groupIdKey = [self groupKeyForGroupId:groupId];
 
     __block BOOL result = NO;
-    [self.dbConnection readWithBlock:^(YapDatabaseReadTransaction *transaction) {
+    [LKStorage readWithBlock:^(YapDatabaseReadTransaction *transaction) {
         NSNumber *_Nullable oldValue =
             [transaction objectForKey:groupIdKey inCollection:kOWSProfileManager_GroupWhitelistCollection];
         result = (oldValue && oldValue.boolValue);
@@ -1452,7 +1452,7 @@ typedef void (^ProfileManagerFailureBlock)(NSError *error);
         [[OWSProfileKeyMessage alloc] initWithTimestamp:[NSDate ows_millisecondTimeStamp] inThread:thread];
     [OWSProfileManager.sharedManager addThreadToProfileWhitelist:thread];
 
-    [self.dbConnection readWriteWithBlock:^(YapDatabaseReadWriteTransaction *_Nonnull transaction) {
+    [LKStorage writeWithBlock:^(YapDatabaseReadWriteTransaction *_Nonnull transaction) {
         [self.messageSenderJobQueue addMessage:message transaction:transaction];
     }];
 }

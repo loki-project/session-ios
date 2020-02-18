@@ -795,12 +795,11 @@ NSString *const kNSNotification_OWSWebSocketStateDidChange = @"kNSNotification_O
             }
 
             if (!success) {
-                [[self.primaryStorage newDatabaseConnection]
-                    readWriteWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
-                        TSErrorMessage *errorMessage = [TSErrorMessage corruptedMessageInUnknownThread];
-                        [self.notificationsManager notifyUserForThreadlessErrorMessage:errorMessage
-                                                                           transaction:transaction];
-                    }];
+                [LKStorage writeWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
+                    TSErrorMessage *errorMessage = [TSErrorMessage corruptedMessageInUnknownThread];
+                    [self.notificationsManager notifyUserForThreadlessErrorMessage:errorMessage
+                                                                       transaction:transaction];
+                }];
             }
 
             dispatch_async(dispatch_get_main_queue(), ^{

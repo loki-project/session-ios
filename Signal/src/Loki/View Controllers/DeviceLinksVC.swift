@@ -88,7 +88,7 @@ final class DeviceLinksVC : UIViewController, UITableViewDataSource, UITableView
         let storage = OWSPrimaryStorage.shared()
         let userHexEncodedPublicKey = getUserHexEncodedPublicKey()
         var deviceLinks: [DeviceLink] = []
-        storage.dbReadConnection.read { transaction in
+        Storage.read { transaction in
             deviceLinks = storage.getDeviceLinks(for: userHexEncodedPublicKey, in: transaction).sorted { lhs, rhs in
                 return lhs.other.hexEncodedPublicKey > rhs.other.hexEncodedPublicKey
             }
@@ -158,13 +158,13 @@ final class DeviceLinksVC : UIViewController, UITableViewDataSource, UITableView
             let unlinkDeviceMessage = UnlinkDeviceMessage(thread: thread)!
             SSKEnvironment.shared.messageSender.send(unlinkDeviceMessage, success: {
                 let storage = OWSPrimaryStorage.shared()
-                storage.dbReadWriteConnection.readWrite { transaction in
+                Storage.write { transaction in
                     storage.deleteAllSessions(forContact: linkedDeviceHexEncodedPublicKey, protocolContext: transaction)
                 }
             }) { _ in
                 print("[Loki] Failed to send unlink device message.")
                 let storage = OWSPrimaryStorage.shared()
-                storage.dbReadWriteConnection.readWrite { transaction in
+                Storage.write { transaction in
                     storage.deleteAllSessions(forContact: linkedDeviceHexEncodedPublicKey, protocolContext: transaction)
                 }
             }

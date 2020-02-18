@@ -6,6 +6,7 @@
 #import "TSContactThread.h"
 #import <YapDatabase/YapDatabaseConnection.h>
 #import <YapDatabase/YapDatabaseTransaction.h>
+#import <SignalServiceKit/SignalServiceKit-Swift.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -152,7 +153,7 @@ NSUInteger TSCallCurrentSchemaVersion = 1;
 
 - (void)updateCallType:(RPRecentCallType)callType
 {
-    [self.dbReadWriteConnection readWriteWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
+    [LKStorage writeWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
         [self updateCallType:callType transaction:transaction];
     }];
 }

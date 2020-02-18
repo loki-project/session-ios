@@ -55,7 +55,7 @@ NSString *const kLocalProfileUniqueId = @"kLocalProfileUniqueId";
                                            dbConnection:(YapDatabaseConnection *)dbConnection
 {
     __block OWSUserProfile *userProfile;
-    [dbConnection readWriteWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
+    [LKStorage writeWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
         userProfile = [OWSUserProfile getOrBuildUserProfileForRecipientId:recipientId transaction:transaction];
     }];
     return userProfile;
@@ -187,7 +187,7 @@ NSString *const kLocalProfileUniqueId = @"kLocalProfileUniqueId";
         dbConnection:(YapDatabaseConnection *)dbConnection
           completion:(nullable OWSUserProfileCompletion)completion
     {
-        [dbConnection readWriteWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
+        [LKStorage writeWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
             [self applyChanges:changeBlock functionName:functionName transaction:transaction completion:completion];
         }];
 }
@@ -369,7 +369,7 @@ NSString *const kLocalProfileUniqueId = @"kLocalProfileUniqueId";
                 dbConnection:(YapDatabaseConnection *)dbConnection
                   completion:(nullable OWSUserProfileCompletion)completion
 {
-    [dbConnection readWriteWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
+    [LKStorage writeWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
         [self updateWithProfileKey:profileKey transaction:transaction completion:completion];
     }];
 }
@@ -504,7 +504,7 @@ NSString *const kLocalProfileUniqueId = @"kLocalProfileUniqueId";
     NSString *profileAvatarsDirPath = self.profileAvatarsDirPath;
     NSMutableSet<NSString *> *profileAvatarFilePaths = [NSMutableSet new];
 
-    [OWSPrimaryStorage.sharedManager.dbReadConnection readWithBlock:^(YapDatabaseReadTransaction *transaction) {
+    [LKStorage readWithBlock:^(YapDatabaseReadTransaction *transaction) {
         [OWSUserProfile
             enumerateCollectionObjectsWithTransaction:transaction
                                            usingBlock:^(id object, BOOL *stop) {

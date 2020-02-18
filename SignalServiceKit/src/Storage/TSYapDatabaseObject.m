@@ -6,6 +6,7 @@
 #import "OWSPrimaryStorage.h"
 #import "SSKEnvironment.h"
 #import <YapDatabase/YapDatabaseTransaction.h>
+#import <SignalServiceKit/SignalServiceKit-Swift.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -45,7 +46,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)save
 {
-    [[self dbReadWriteConnection] readWriteWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
+    [LKStorage writeWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
         [self saveWithTransaction:transaction];
     }];
 }
@@ -65,7 +66,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)touch
 {
-    [[self dbReadWriteConnection] readWriteWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
+    [LKStorage writeWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
         [self touchWithTransaction:transaction];
     }];
 }
@@ -77,7 +78,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)remove
 {
-    [[self dbReadWriteConnection] readWriteWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
+    [LKStorage writeWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
         [self removeWithTransaction:transaction];
     }];
 }
@@ -181,7 +182,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 + (void)removeAllObjectsInCollection
 {
-    [[self dbReadWriteConnection] readWriteWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
+    [LKStorage writeWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
         [transaction removeAllObjectsInCollection:[self collection]];
     }];
 }

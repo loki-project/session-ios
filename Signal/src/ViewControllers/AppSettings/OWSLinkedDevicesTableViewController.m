@@ -59,7 +59,7 @@ int const OWSLinkedDevicesTableViewControllerSectionAddDevice = 1;
     [self.dbConnection beginLongLivedReadTransaction];
     self.deviceMappings = [[YapDatabaseViewMappings alloc] initWithGroups:@[ TSSecondaryDevicesGroup ]
                                                                      view:TSSecondaryDevicesDatabaseViewExtensionName];
-    [self.dbConnection readWithBlock:^(YapDatabaseReadTransaction *transaction) {
+    [LKStorage readWithBlock:^(YapDatabaseReadTransaction *transaction) {
         [self.deviceMappings updateWithTransaction:transaction];
     }];
 
@@ -112,7 +112,7 @@ int const OWSLinkedDevicesTableViewControllerSectionAddDevice = 1;
 // Don't show edit button for an empty table
 - (void)setupEditButton
 {
-    [self.dbConnection readWithBlock:^(YapDatabaseReadTransaction *transaction) {
+    [LKStorage readWithBlock:^(YapDatabaseReadTransaction *transaction) {
         if ([OWSDevice hasSecondaryDevicesWithTransaction:transaction]) {
             self.navigationItem.rightBarButtonItem = self.editButtonItem;
         } else {
@@ -217,7 +217,7 @@ int const OWSLinkedDevicesTableViewControllerSectionAddDevice = 1;
     // so rebuild everything.  This is expensive and usually isn't necessary, but
     // there's no alternative.
     [self.dbConnection beginLongLivedReadTransaction];
-    [self.dbConnection readWithBlock:^(YapDatabaseReadTransaction *transaction) {
+    [LKStorage readWithBlock:^(YapDatabaseReadTransaction *transaction) {
         [self.deviceMappings updateWithTransaction:transaction];
     }];
 
@@ -347,7 +347,7 @@ int const OWSLinkedDevicesTableViewControllerSectionAddDevice = 1;
 {
     if (indexPath.section == OWSLinkedDevicesTableViewControllerSectionExistingDevices) {
         __block OWSDevice *device;
-        [self.dbConnection readWithBlock:^(YapDatabaseReadTransaction *transaction) {
+        [LKStorage readWithBlock:^(YapDatabaseReadTransaction *transaction) {
             device = [[transaction extension:TSSecondaryDevicesDatabaseViewExtensionName]
                 objectAtIndexPath:indexPath
                      withMappings:self.deviceMappings];

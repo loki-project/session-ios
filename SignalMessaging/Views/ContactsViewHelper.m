@@ -295,7 +295,7 @@ NS_ASSUME_NONNULL_BEGIN
     OWSAssertIsOnMainThread();
     if (!_nonSignalContacts) {
         NSMutableSet<Contact *> *nonSignalContacts = [NSMutableSet new];
-        [OWSPrimaryStorage.dbReadConnection readWithBlock:^(YapDatabaseReadTransaction *transaction) {
+        [LKStorage readWithBlock:^(YapDatabaseReadTransaction *transaction) {
             for (Contact *contact in self.contactsManager.allContactsMap.allValues) {
                 NSArray<SignalRecipient *> *signalRecipients = [contact signalRecipientsWithTransaction:transaction];
                 if (signalRecipients.count < 1) {

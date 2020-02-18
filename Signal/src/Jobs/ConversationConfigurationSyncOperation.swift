@@ -67,7 +67,7 @@ class ConversationConfigurationSyncOperation: OWSOperation {
         let syncMessage: OWSSyncGroupsMessage = OWSSyncGroupsMessage()
 
         var dataSource: DataSource?
-        self.dbConnection.read { transaction in
+        Storage.read { transaction in
             guard let messageData: Data = syncMessage.buildPlainTextAttachmentData(with: transaction) else {
                 owsFailDebug("could not serialize sync groups data")
                 return

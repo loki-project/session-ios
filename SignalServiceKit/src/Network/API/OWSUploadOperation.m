@@ -65,7 +65,7 @@ static const CGFloat kAttachmentUploadProgressTheta = 0.001f;
 - (void)run
 {
     __block TSAttachmentStream *attachmentStream;
-    [self.dbConnection readWithBlock:^(YapDatabaseReadTransaction *transaction) {
+    [LKStorage readWithBlock:^(YapDatabaseReadTransaction *transaction) {
         attachmentStream = [TSAttachmentStream fetchObjectWithUniqueID:self.attachmentId transaction:transaction];
     }];
 
@@ -86,7 +86,7 @@ static const CGFloat kAttachmentUploadProgressTheta = 0.001f;
     [self fireNotificationWithProgress:0];
     
     __block LKPublicChat *publicChat;
-    [self.dbConnection readWithBlock:^(YapDatabaseReadTransaction *transaction) {
+    [LKStorage readWithBlock:^(YapDatabaseReadTransaction *transaction) {
         publicChat = [LKDatabaseUtilities getPublicChatForThreadID:self.threadID transaction:transaction];
     }];
     NSString *server = (publicChat != nil) ? publicChat.server : LKFileServerAPI.server;

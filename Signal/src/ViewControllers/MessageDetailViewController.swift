@@ -212,7 +212,7 @@ class MessageDetailViewController: OWSViewController, MediaGalleryDataSourceDele
 
     lazy var thread: TSThread = {
         var thread: TSThread?
-        self.uiDatabaseConnection.read { transaction in
+        Storage.read { transaction in
             thread = self.message.thread(with: transaction)
         }
         return thread!

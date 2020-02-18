@@ -154,7 +154,7 @@ NSString *const kOutgoingReadReceiptManagerCollection = @"kOutgoingReadReceiptMa
     NSString *collection = [self collectionForReceiptType:receiptType];
 
     NSMutableDictionary<NSString *, NSSet<NSNumber *> *> *queuedReceiptMap = [NSMutableDictionary new];
-    [self.dbConnection readWithBlock:^(YapDatabaseReadTransaction *transaction) {
+    [LKStorage readWithBlock:^(YapDatabaseReadTransaction *transaction) {
         [transaction enumerateKeysAndObjectsInCollection:collection
                                               usingBlock:^(NSString *key, id object, BOOL *stop) {
                                                   NSString *recipientId = key;
@@ -251,7 +251,7 @@ NSString *const kOutgoingReadReceiptManagerCollection = @"kOutgoingReadReceiptMa
         return;
     }
     dispatch_async(self.serialQueue, ^{
-        [self.dbConnection readWriteWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
+        [LKStorage writeWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
             NSSet<NSNumber *> *_Nullable oldTimestamps = [transaction objectForKey:recipientId inCollection:collection];
             NSMutableSet<NSNumber *> *newTimestamps
                 = (oldTimestamps ? [oldTimestamps mutableCopy] : [NSMutableSet new]);
@@ -278,7 +278,7 @@ NSString *const kOutgoingReadReceiptManagerCollection = @"kOutgoingReadReceiptMa
         return;
     }
     dispatch_async(self.serialQueue, ^{
-        [self.dbConnection readWriteWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
+        [LKStorage writeWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
             NSSet<NSNumber *> *_Nullable oldTimestamps = [transaction objectForKey:recipientId inCollection:collection];
             NSMutableSet<NSNumber *> *newTimestamps
                 = (oldTimestamps ? [oldTimestamps mutableCopy] : [NSMutableSet new]);

@@ -18,6 +18,7 @@
 #import "TSThread.h"
 #import "UIImage+OWS.h"
 #import <YapDatabase/YapDatabase.h>
+#import <SignalServiceKit/SignalServiceKit-Swift.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -66,7 +67,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (NSUInteger)unreadMessagesCount
 {
     __block NSUInteger numberOfItems;
-    [self.dbConnection readWithBlock:^(YapDatabaseReadTransaction *transaction) {
+    [LKStorage readWithBlock:^(YapDatabaseReadTransaction *transaction) {
         numberOfItems = [[transaction ext:TSUnreadDatabaseViewExtensionName] numberOfItemsInAllGroups];
     }];
 
@@ -76,7 +77,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (NSUInteger)unreadMessagesCountExcept:(TSThread *)thread
 {
     __block NSUInteger numberOfItems;
-    [self.dbConnection readWithBlock:^(YapDatabaseReadTransaction *transaction) {
+    [LKStorage readWithBlock:^(YapDatabaseReadTransaction *transaction) {
         id databaseView = [transaction ext:TSUnreadDatabaseViewExtensionName];
         OWSAssertDebug(databaseView);
         numberOfItems = ([databaseView numberOfItemsInAllGroups] - [databaseView numberOfItemsInGroup:thread.uniqueId]);

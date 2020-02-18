@@ -10,6 +10,7 @@
 #import "TSAccountManager.h"
 #import <SignalCoreKit/Cryptography.h>
 #import <SignalCoreKit/NSString+OWS.h>
+#import <SignalServiceKit/SignalServiceKit-Swift.h>
 
 @import Contacts;
 
@@ -235,7 +236,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (NSArray<NSString *> *)textSecureIdentifiers {
     __block NSMutableArray *identifiers = [NSMutableArray array];
 
-    [OWSPrimaryStorage.dbReadConnection readWithBlock:^(YapDatabaseReadTransaction *transaction) {
+    [LKStorage readWithBlock:^(YapDatabaseReadTransaction *transaction) {
         for (PhoneNumber *number in self.parsedPhoneNumbers) {
             if ([SignalRecipient isRegisteredRecipient:number.toE164 transaction:transaction]) {
                 [identifiers addObject:number.toE164];

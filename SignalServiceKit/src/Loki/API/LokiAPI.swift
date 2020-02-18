@@ -2,17 +2,34 @@ import PromiseKit
 
 @objc(LKAPI)
 public final class LokiAPI : NSObject {
+    /// Only ever modified from the message processing queue (`OWSBatchMessageProcessor.processingQueue`).
     private static var syncMessageTimestamps: [String:Set<UInt64>] = [:]
-    public static var lastDeviceLinkUpdate: [String:Date] = [:] // Hex encoded public key to date
-    @objc public static var userHexEncodedPublicKeyCache: [String:Set<String>] = [:] // Thread ID to set of user hex encoded public keys
+    
+    public static var _lastDeviceLinkUpdate: [String:Date] = [:]
+    /// A mapping from hex encoded public key to date updated.
+    public static var lastDeviceLinkUpdate: [String:Date] {
+        get { stateQueue.sync { _lastDeviceLinkUpdate } }
+        set { stateQueue.sync { _lastDeviceLinkUpdate = newValue } }
+    }
+    
+    private static var _userHexEncodedPublicKeyCache: [String:Set<String>] = [:]
+    /// A mapping from thread ID to set of user hex encoded public keys.
+    @objc public static var userHexEncodedPublicKeyCache: [String:Set<String>] {
+        get { stateQueue.sync { _userHexEncodedPublicKeyCache } }
+        set { stateQueue.sync { _userHexEncodedPublicKeyCache = newValue } }
+    }
+    
+    private static let stateQueue = DispatchQueue(label: "stateQueue")
+    
+    /// All service node related errors must be handled on this queue to avoid race conditions maintaining e.g. failure counts.
     public static let errorHandlingQueue = DispatchQueue(label: "errorHandlingQueue")
     
     // MARK: Convenience
-    internal static let storage = OWSPrimaryStorage.shared()
     internal static let userHexEncodedPublicKey = getUserHexEncodedPublicKey()
+    internal static var storage: OWSPrimaryStorage { OWSPrimaryStorage.shared() }
     
     // MARK: Settings
-    private static let version = "v1"
+    private static let apiVersion = "v1"
     private static let maxRetryCount: UInt = 8
     private static let defaultTimeout: TimeInterval = 20
     private static let longPollingTimeout: TimeInterval = 40
@@ -67,8 +84,9 @@ public final class LokiAPI : NSObject {
 
         override public var description: String { return "\(kind.rawValue)(\(hexEncodedPublicKey))" }
     }
-    
+
     public typealias MessageListPromise = Promise<[SSKProtoEnvelope]>
+    
     public typealias RawResponsePromise = Promise<RawResponse>
     
     // MARK: Lifecycle
@@ -77,7 +95,7 @@ public final class LokiAPI : NSObject {
     // MARK: Internal API
     internal static func invoke(_ method: LokiAPITarget.Method, on target: LokiAPITarget, associatedWith hexEncodedPublicKey: String,
         parameters: [String:Any], headers: [String:String]? = nil, timeout: TimeInterval? = nil) -> RawResponsePromise {
-        let url = URL(string: "\(target.address):\(target.port)/storage_rpc/\(version)")!
+        let url = URL(string: "\(target.address):\(target.port)/storage_rpc/\(apiVersion)")!
         let request = TSRequest(url: url, method: "POST", parameters: [ "method" : method.rawValue, "params" : parameters ])
         if let headers = headers { request.allHTTPHeaderFields = headers }
         request.timeoutInterval = timeout ?? defaultTimeout
@@ -106,7 +124,7 @@ public final class LokiAPI : NSObject {
     
     public static func getDestinations(for hexEncodedPublicKey: String) -> Promise<[Destination]> {
         var result: Promise<[Destination]>!
-        storage.dbReadConnection.readWrite { transaction in
+        Storage.write { transaction in
             result = getDestinations(for: hexEncodedPublicKey, in: transaction)
         }
         return result
@@ -128,7 +146,7 @@ public final class LokiAPI : NSObject {
             if let transaction = transaction {
                 getDestinationsInternal(in: transaction)
             } else {
-                storage.dbReadConnection.read { transaction in
+                Storage.read { transaction in
                     getDestinationsInternal(in: transaction)
                 }
             }
@@ -299,28 +317,28 @@ public final class LokiAPI : NSObject {
         var result: String? = nil
         // Uses a read/write connection because getting the last message hash value also removes expired messages as needed
         // TODO: This shouldn't be the case; a getter shouldn't have an unexpected side effect
-        storage.dbReadWriteConnection.readWrite { transaction in
+        Storage.write { transaction in
             result = storage.getLastMessageHash(forServiceNode: target.address, transaction: transaction)
         }
         return result
     }
 
     private static func setLastMessageHashValue(for target: LokiAPITarget, hashValue: String, expirationDate: UInt64) {
-        storage.dbReadWriteConnection.readWrite { transaction in
+        Storage.write { transaction in
             storage.setLastMessageHash(forServiceNode: target.address, hash: hashValue, expiresAt: expirationDate, transaction: transaction)
         }
     }
 
     private static func getReceivedMessageHashValues() -> Set<String>? {
         var result: Set<String>? = nil
-        storage.dbReadConnection.read { transaction in
+        Storage.read { transaction in
             result = transaction.object(forKey: receivedMessageHashValuesKey, inCollection: receivedMessageHashValuesCollection) as! Set<String>?
         }
         return result
     }
 
     private static func setReceivedMessageHashValues(to receivedMessageHashValues: Set<String>) {
-        storage.dbReadWriteConnection.readWrite { transaction in
+        Storage.write { transaction in
             transaction.setObject(receivedMessageHashValues, forKey: receivedMessageHashValuesKey, inCollection: receivedMessageHashValuesCollection)
         }
     }
@@ -340,10 +358,10 @@ public final class LokiAPI : NSObject {
         var candidates: [Mention] = []
         // Gather candidates
         var publicChat: LokiPublicChat?
-        storage.dbReadConnection.read { transaction in
+        Storage.read { transaction in
             publicChat = LokiDatabaseUtilities.getPublicChat(for: threadID, in: transaction)
         }
-        storage.dbReadConnection.read { transaction in
+        Storage.read { transaction in
             candidates = cache.flatMap { hexEncodedPublicKey in
                 let uncheckedDisplayName: String?
                 if let publicChat = publicChat {
@@ -371,22 +389,15 @@ public final class LokiAPI : NSObject {
         return candidates
     }
     
-    @objc public static func populateUserHexEncodedPublicKeyCacheIfNeeded(for threadID: String, in transaction: YapDatabaseReadWriteTransaction? = nil) {
+    @objc public static func populateUserHexEncodedPublicKeyCacheIfNeeded(for threadID: String) {
         guard userHexEncodedPublicKeyCache[threadID] == nil else { return }
         var result: Set<String> = []
-        func populate(in transaction: YapDatabaseReadWriteTransaction) {
+        Storage.write { transaction in
             guard let thread = TSThread.fetch(uniqueId: threadID, transaction: transaction) else { return }
             let interactions = transaction.ext(TSMessageDatabaseViewExtensionName) as! YapDatabaseViewTransaction
             interactions.enumerateKeysAndObjects(inGroup: threadID) { _, _, object, index, _ in
                 guard let message = object as? TSIncomingMessage, index < userIDScanLimit else { return }
                 result.insert(message.authorId)
-            }
-        }
-        if let transaction = transaction {
-            populate(in: transaction)
-        } else {
-            storage.dbReadWriteConnection.readWrite { transaction in
-                populate(in: transaction)
             }
         }
         result.insert(userHexEncodedPublicKey)

@@ -12,7 +12,7 @@ public final class MentionUtilities : NSObject {
         let userHexEncodedPublicKey = getUserHexEncodedPublicKey()
         var publicChat: LokiPublicChat?
         var userLinkedDeviceHexEncodedPublicKeys: Set<String>!
-        OWSPrimaryStorage.shared().dbReadConnection.read { transaction in
+        Storage.read { transaction in
             publicChat = LokiDatabaseUtilities.getPublicChat(for: threadID, in: transaction)
             userLinkedDeviceHexEncodedPublicKeys = LokiDatabaseUtilities.getLinkedDeviceHexEncodedPublicKeys(for: userHexEncodedPublicKey, in: transaction)
         }

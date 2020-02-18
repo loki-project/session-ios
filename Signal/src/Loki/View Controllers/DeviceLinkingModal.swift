@@ -209,8 +209,9 @@ final class DeviceLinkingModal : Modal, DeviceLinkingSessionDelegate {
         session.markLinkingRequestAsProcessed() // Only relevant in master mode
         delegate?.handleDeviceLinkingModalDismissed() // Only relevant in slave mode
         if let deviceLink = deviceLink {
-            OWSPrimaryStorage.shared().dbReadWriteConnection.readWrite { transaction in
-                OWSPrimaryStorage.shared().removePreKeyBundle(forContact: deviceLink.slave.hexEncodedPublicKey, transaction: transaction)
+            let storage = OWSPrimaryStorage.shared()
+            Storage.write { transaction in
+                storage.removePreKeyBundle(forContact: deviceLink.slave.hexEncodedPublicKey, transaction: transaction)
             }
         }
         dismiss(animated: true, completion: nil)

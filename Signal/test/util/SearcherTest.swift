@@ -299,7 +299,7 @@ class FullTextSearcherTest: SignalBaseTest {
     func bodies<T>(forMessageResults messageResults: [ConversationSearchResult<T>]) -> [String] {
         var result = [String]()
 
-        self.dbConnection.read { transaction in
+        Storage.read { transaction in
             for messageResult in messageResults {
                 guard let messageId = messageResult.messageId else {
                     owsFailDebug("message result missing message id")
@@ -331,7 +331,7 @@ class FullTextSearcherTest: SignalBaseTest {
 
     private func getResultSet(searchText: String) -> HomeScreenSearchResultSet {
         var results: HomeScreenSearchResultSet!
-        self.dbConnection.read { transaction in
+        Storage.read { transaction in
             results = self.searcher.searchForHomeScreen(searchText: searchText, transaction: transaction, contactsManager: SSKEnvironment.shared.contactsManager)
         }
         return results

@@ -11,6 +11,7 @@
 #import <SignalServiceKit/TSStorageHeaders.h>
 #import <SignalServiceKit/YapDatabaseConnection+OWS.h>
 #import <SignalServiceKit/YapDatabaseTransaction+OWS.h>
+#import <SignalServiceKit/SignalServiceKit-Swift.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -73,7 +74,7 @@ NSString *const OWSPreferencesKeySystemCallLogEnabled = @"OWSPreferencesKeySyste
     OWSAssertDebug(key != nil);
 
     __block id result;
-    [OWSPrimaryStorage.dbReadConnection readWithBlock:^(YapDatabaseReadTransaction *transaction) {
+    [LKStorage readWithBlock:^(YapDatabaseReadTransaction *transaction) {
         result = [self tryGetValueForKey:key transaction:transaction];
     }];
     return result;
@@ -87,7 +88,7 @@ NSString *const OWSPreferencesKeySystemCallLogEnabled = @"OWSPreferencesKeySyste
 
 - (void)setValueForKey:(NSString *)key toValue:(nullable id)value
 {
-    [OWSPrimaryStorage.dbReadWriteConnection readWriteWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
+    [LKStorage writeWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
         [self setValueForKey:key toValue:value transaction:transaction];
     }];
 }

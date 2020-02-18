@@ -45,7 +45,7 @@ public class LokiP2PAPI : NSObject {
         // Dispatch on the main queue so we escape any transaction blocks
         DispatchQueue.main.async {
             var contactThread: TSThread? = nil
-            storage.dbReadConnection.read { transaction in
+            Storage.read { transaction in
                 contactThread = TSContactThread.getWithContactId(pubKey, transaction: transaction)
             }
             

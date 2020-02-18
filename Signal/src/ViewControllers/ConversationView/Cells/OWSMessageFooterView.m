@@ -119,7 +119,7 @@ NS_ASSUME_NONNULL_BEGIN
         UIImage *_Nullable statusIndicatorImage = nil;
 
         __block BOOL isNoteToSelf = NO;
-        [OWSPrimaryStorage.sharedManager.dbReadConnection readWithBlock:^(YapDatabaseReadTransaction *transaction) {
+        [LKStorage readWithBlock:^(YapDatabaseReadTransaction *transaction) {
             TSContactThread *thread = [outgoingMessage.thread as:TSContactThread.class];
             if (thread != nil) {
                 isNoteToSelf = [LKDatabaseUtilities isUserLinkedDevice:thread.contactIdentifier in:transaction];

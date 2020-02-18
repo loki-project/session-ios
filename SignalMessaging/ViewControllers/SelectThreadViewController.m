@@ -341,7 +341,7 @@ NS_ASSUME_NONNULL_BEGIN
     }
 
     __block TSThread *thread = nil;
-    [OWSPrimaryStorage.dbReadWriteConnection readWriteWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
+    [LKStorage writeWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
         thread = [TSContactThread getOrCreateThreadWithContactId:signalAccount.recipientId transaction:transaction];
     }];
     OWSAssertDebug(thread);

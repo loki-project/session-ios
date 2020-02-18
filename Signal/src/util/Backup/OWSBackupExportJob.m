@@ -548,7 +548,7 @@ NS_ASSUME_NONNULL_BEGIN
     __block NSUInteger copiedMigrations = 0;
     __block NSUInteger copiedMisc = 0;
     self.unsavedAttachmentExports = [NSMutableArray new];
-    [self.dbConnection readWithBlock:^(YapDatabaseReadTransaction *transaction) {
+    [LKStorage readWithBlock:^(YapDatabaseReadTransaction *transaction) {
         copiedThreads = exportEntities(transaction,
             [TSThread collection],
             [TSThread class],
@@ -864,7 +864,7 @@ NS_ASSUME_NONNULL_BEGIN
                 backupFragment.relativeFilePath = attachmentExport.relativeFilePath;
                 backupFragment.attachmentId = attachmentExport.attachmentId;
                 backupFragment.uncompressedDataLength = exportItem.uncompressedDataLength;
-                [self.dbConnection readWriteWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
+                [LKStorage writeWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
                     [backupFragment saveWithTransaction:transaction];
                 }];
 
@@ -1102,7 +1102,7 @@ NS_ASSUME_NONNULL_BEGIN
     // After every successful backup export, we can (and should) cull metadata
     // for any backup fragment (i.e. CloudKit record) that wasn't involved in
     // the latest backup export.
-    [self.dbConnection readWriteWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
+    [LKStorage writeWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
         NSArray<NSString *> *allRecordNames = [transaction allKeysInCollection:[OWSBackupFragment collection]];
 
         NSMutableSet<NSString *> *obsoleteRecordNames = [NSMutableSet new];

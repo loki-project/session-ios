@@ -157,7 +157,7 @@ public extension JobQueue {
             return
         }
 
-        self.dbConnection.readWrite { transaction in
+        Storage.write { transaction in
             guard let nextJob: JobRecordType = self.finder.getNextReady(label: self.jobRecordLabel, transaction: transaction) as? JobRecordType else {
                 Logger.verbose("nothing left to enqueue")
                 return

@@ -251,7 +251,7 @@ NSString *const TSAccountManager_NeedsAccountAttributesUpdateKey = @"TSAccountMa
 - (uint32_t)getOrGenerateRegistrationId
 {
     __block uint32_t result;
-    [self.dbConnection readWriteWithBlock:^(YapDatabaseReadWriteTransaction *_Nonnull transaction) {
+    [LKStorage writeWithBlock:^(YapDatabaseReadWriteTransaction *_Nonnull transaction) {
         result = [self getOrGenerateRegistrationId:transaction];
     }];
     return result;
@@ -521,7 +521,7 @@ NSString *const TSAccountManager_NeedsAccountAttributesUpdateKey = @"TSAccountMa
 
 - (void)storeServerAuthToken:(NSString *)authToken
 {
-    [self.dbConnection readWriteWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
+    [LKStorage writeWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
         [transaction setObject:authToken
                         forKey:TSAccountManager_ServerAuthToken
                   inCollection:TSAccountManager_UserAccountCollection];
@@ -621,7 +621,7 @@ NSString *const TSAccountManager_NeedsAccountAttributesUpdateKey = @"TSAccountMa
         _cachedLocalNumber = nil;
         _phoneNumberAwaitingVerification = nil;
         _cachedIsDeregistered = nil;
-        [self.dbConnection readWriteWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
+        [LKStorage writeWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
             [transaction removeAllObjectsInCollection:TSAccountManager_UserAccountCollection];
 
             [[OWSPrimaryStorage sharedManager] resetSessionStore:transaction];
@@ -721,7 +721,7 @@ NSString *const TSAccountManager_NeedsAccountAttributesUpdateKey = @"TSAccountMa
     }
     AnyPromise *promise = [self performUpdateAccountAttributes];
     promise = promise.then(^(id value) {
-        [self.dbConnection readWriteWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
+        [LKStorage writeWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
             // Clear the update request unless a new update has been requested
             // while this update was in flight.
             NSDate *_Nullable latestUpdateRequestDate =

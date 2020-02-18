@@ -293,7 +293,7 @@ NSString *const kOWSSoundsStorageGlobalNotificationKey = @"kOWSSoundsStorageGlob
 
 - (void)setGlobalNotificationSound:(OWSSound)sound
 {
-    [self.dbConnection readWriteWithBlock:^(YapDatabaseReadWriteTransaction *_Nonnull transaction) {
+    [LKStorage writeWithBlock:^(YapDatabaseReadWriteTransaction *_Nonnull transaction) {
         [self setGlobalNotificationSound:sound transaction:transaction];
     }];
 }

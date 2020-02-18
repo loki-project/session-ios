@@ -216,7 +216,7 @@ NSError *EnsureDecryptError(NSError *_Nullable error, NSString *fallbackErrorDes
 
         switch (envelope.type) {
             case SSKProtoEnvelopeTypeFriendRequest: {
-                [self.dbConnection readWriteWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
+                [LKStorage writeWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
                     [self decryptFriendRequestMessage:envelope
                          envelopeData:envelopeData
                          successBlock:^(OWSMessageDecryptResult *result) {
@@ -271,7 +271,7 @@ NSError *EnsureDecryptError(NSError *_Nullable error, NSString *fallbackErrorDes
             case SSKProtoEnvelopeTypeReceipt:
             case SSKProtoEnvelopeTypeKeyExchange:
             case SSKProtoEnvelopeTypeUnknown: {
-                [self.dbConnection readWriteWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
+                [LKStorage writeWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
                     OWSMessageDecryptResult *result =
                         [OWSMessageDecryptResult resultWithEnvelopeData:envelopeData
                                                           plaintextData:nil
@@ -307,12 +307,11 @@ NSError *EnsureDecryptError(NSError *_Nullable error, NSString *fallbackErrorDes
         OWSFailDebug(@"Received an invalid envelope: %@.", exception.debugDescription);
         OWSProdFail([OWSAnalyticsEvents messageManagerErrorInvalidProtocolMessage]);
 
-        [[self.primaryStorage newDatabaseConnection]
-            readWriteWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
-                TSErrorMessage *errorMessage = [TSErrorMessage corruptedMessageInUnknownThread];
-                [SSKEnvironment.shared.notificationsManager notifyUserForThreadlessErrorMessage:errorMessage
-                                                                                    transaction:transaction];
-            }];
+        [LKStorage writeWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
+            TSErrorMessage *errorMessage = [TSErrorMessage corruptedMessageInUnknownThread];
+            [SSKEnvironment.shared.notificationsManager notifyUserForThreadlessErrorMessage:errorMessage
+                                                                                transaction:transaction];
+        }];
     }
 
     failureBlock();
@@ -635,7 +634,7 @@ NSError *EnsureDecryptError(NSError *_Nullable error, NSString *fallbackErrorDes
     OWSLogError(
         @"Got exception: %@ of type: %@ with reason: %@", exception.description, exception.name, exception.reason);
 
-    [self.dbConnection readWriteWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
+    [LKStorage writeWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
         TSErrorMessage *errorMessage;
 
         if (envelope.source.length == 0) {

@@ -217,7 +217,7 @@ NSString *const OWSReadReceiptManagerAreReadReceiptsEnabled = @"areReadReceiptsE
             OWSReadReceiptsForLinkedDevicesMessage *message =
                 [[OWSReadReceiptsForLinkedDevicesMessage alloc] initWithReadReceipts:readReceiptsForLinkedDevices];
 
-            [self.dbConnection readWriteWithBlock:^(YapDatabaseReadWriteTransaction *_Nonnull transaction) {
+            [LKStorage writeWithBlock:^(YapDatabaseReadWriteTransaction *_Nonnull transaction) {
                 [self.messageSenderJobQueue addMessage:message transaction:transaction];
             }];
         }
@@ -250,7 +250,7 @@ NSString *const OWSReadReceiptManagerAreReadReceiptsEnabled = @"areReadReceiptsE
     OWSAssertDebug(thread);
 
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-        [self.dbConnection readWriteWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
+        [LKStorage writeWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
             [self markAsReadBeforeSortId:sortId
                                   thread:thread
                            readTimestamp:[NSDate ows_millisecondTimeStamp]
@@ -287,7 +287,7 @@ NSString *const OWSReadReceiptManagerAreReadReceiptsEnabled = @"areReadReceiptsE
             }
 
             __block BOOL isNoteToSelf;
-            [OWSPrimaryStorage.sharedManager.dbReadConnection readWithBlock:^(YapDatabaseReadTransaction *transaction) {
+            [LKStorage readWithBlock:^(YapDatabaseReadTransaction *transaction) {
                 isNoteToSelf = [LKDatabaseUtilities isUserLinkedDevice:message.authorId in:transaction];
             }];
             
@@ -324,7 +324,7 @@ NSString *const OWSReadReceiptManagerAreReadReceiptsEnabled = @"areReadReceiptsE
     }
 
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-        [self.dbConnection readWriteWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
+        [LKStorage writeWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
             for (NSNumber *nsSentTimestamp in sentTimestamps) {
                 UInt64 sentTimestamp = [nsSentTimestamp unsignedLongLongValue];
 

@@ -34,7 +34,7 @@ public class OWS113MultiAttachmentMediaMessages: OWSDatabaseMigration {
         DispatchQueue.global().async {
             var legacyAttachments: [(attachmentId: String, messageId: String)] = []
 
-            self.dbReadWriteConnection().read { transaction in
+            Storage.read { transaction in
                 TSMessage.enumerateCollectionObjects(with: transaction) { object, _ in
                     autoreleasepool {
                         guard let message: TSMessage = object as? TSMessage else {
@@ -53,7 +53,7 @@ public class OWS113MultiAttachmentMediaMessages: OWSDatabaseMigration {
                     }
                 }
             }
-            self.dbReadWriteConnection().readWrite { transaction in
+            Storage.write { transaction in
                 for (attachmentId, messageId) in legacyAttachments {
                     autoreleasepool {
                         guard let attachment = TSAttachment.fetch(uniqueId: attachmentId, transaction: transaction) else {

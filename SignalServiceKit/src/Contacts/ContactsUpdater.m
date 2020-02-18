@@ -96,7 +96,7 @@ NS_ASSUME_NONNULL_BEGIN
         NSSet<NSString *> *registeredRecipientIds = operation.registeredRecipientIds;
 
         NSMutableSet<SignalRecipient *> *recipients = [NSMutableSet new];
-        [OWSPrimaryStorage.dbReadWriteConnection readWriteWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
+        [LKStorage writeWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
             for (NSString *recipientId in recipientIdsToLookup) {
                 if ([registeredRecipientIds containsObject:recipientId]) {
                     SignalRecipient *recipient =

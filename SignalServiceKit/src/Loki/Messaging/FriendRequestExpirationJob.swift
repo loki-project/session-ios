@@ -64,7 +64,7 @@ public final class FriendRequestExpirationJob : NSObject {
         expireMessages()
         
         var nextExpirationTimestamp: UInt64? = nil
-        databaseConnection.readWrite { transaction in
+        Storage.read { transaction in
             nextExpirationTimestamp = self.messageFinder.nextExpirationTimestamp(with: transaction)
         }
         
@@ -106,7 +106,7 @@ public final class FriendRequestExpirationJob : NSObject {
             
             guard let strongSelf = self else { return }
             
-            strongSelf.databaseConnection.readWrite { transaction in
+            Storage.write { transaction in
                 strongSelf.messageFinder.enumurateMessagesPendingExpiration(with: { message in
                     
                     // Sanity check

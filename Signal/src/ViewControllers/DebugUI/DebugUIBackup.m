@@ -222,10 +222,9 @@ NS_ASSUME_NONNULL_BEGIN
 {
     OWSLogInfo(@"");
 
-    [OWSPrimaryStorage.sharedManager.newDatabaseConnection
-        readWriteWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
-            [transaction removeAllObjectsInCollection:[OWSBackupFragment collection]];
-        }];
+    [LKStorage writeWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
+        [transaction removeAllObjectsInCollection:[OWSBackupFragment collection]];
+    }];
 }
 
 + (void)logBackupMetadataCache

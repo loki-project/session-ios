@@ -8,6 +8,7 @@
 #import <YapDatabase/YapDatabase.h>
 #import <YapDatabase/YapDatabaseQuery.h>
 #import <YapDatabase/YapDatabaseSecondaryIndex.h>
+#import <SignalServiceKit/SignalServiceKit-Swift.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -77,18 +78,17 @@ static NSString *const OWSFailedAttachmentDownloadsJobAttachmentStateIndex = @"i
 - (void)run
 {
     __block uint count = 0;
-    [[self.primaryStorage newDatabaseConnection]
-        readWriteWithBlock:^(YapDatabaseReadWriteTransaction *_Nonnull transaction) {
-            [self enumerateAttemptingOutAttachmentsWithBlock:^(TSAttachmentPointer *attachment) {
-                // sanity check
-                if (attachment.state != TSAttachmentPointerStateFailed) {
-                    attachment.state = TSAttachmentPointerStateFailed;
-                    [attachment saveWithTransaction:transaction];
-                    count++;
-                }
+    [LKStorage writeWithBlock:^(YapDatabaseReadWriteTransaction *_Nonnull transaction) {
+        [self enumerateAttemptingOutAttachmentsWithBlock:^(TSAttachmentPointer *attachment) {
+            // sanity check
+            if (attachment.state != TSAttachmentPointerStateFailed) {
+                attachment.state = TSAttachmentPointerStateFailed;
+                [attachment saveWithTransaction:transaction];
+                count++;
             }
-                                                 transaction:transaction];
-        }];
+        }
+                                             transaction:transaction];
+    }];
 
     OWSLogDebug(@"Marked %u attachments as unsent", count);
 }

@@ -80,7 +80,7 @@ NS_ASSUME_NONNULL_BEGIN
         contactsBuilder = [SSKProtoSyncMessageContacts builder];
         [contactsBuilder setBlob:attachmentProto];
         __block NSData *data;
-        [OWSPrimaryStorage.sharedManager.dbReadConnection readWithBlock:^(YapDatabaseReadTransaction *transaction) {
+        [LKStorage readWithBlock:^(YapDatabaseReadTransaction *transaction) {
             data = [self buildPlainTextAttachmentDataWithTransaction:transaction];
         }];
         [contactsBuilder setData:data];

@@ -581,7 +581,7 @@ class MediaPageViewController: UIPageViewController, UIPageViewControllerDataSou
 
         Logger.debug("cache miss.")
         var fetchedItem: ConversationViewItem?
-        self.uiDatabaseConnection.read { transaction in
+        Storage.read { transaction in
             let message = galleryItem.message
             let thread = message.thread(with: transaction)
             let conversationStyle = ConversationStyle(thread: thread)
@@ -680,7 +680,7 @@ class MediaPageViewController: UIPageViewController, UIPageViewControllerDataSou
             let hexEncodedPublicKey = incomingMessage.authorId
             if incomingMessage.thread.isGroupThread() {
                 var publicChat: LokiPublicChat?
-                OWSPrimaryStorage.shared().dbReadConnection.read { transaction in
+                Storage.read { transaction in
                     publicChat = LokiDatabaseUtilities.getPublicChat(for: incomingMessage.thread.uniqueId!, in: transaction)
                 }
                 if let publicChat = publicChat {

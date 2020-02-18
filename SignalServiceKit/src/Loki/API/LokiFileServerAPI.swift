@@ -2,7 +2,7 @@ import PromiseKit
 
 @objc(LKFileServerAPI)
 public final class LokiFileServerAPI : LokiDotNetAPI {
-
+    
     // MARK: Settings
     #if DEBUG
     @objc public static let server = "http://file-dev.lokinet.org"
@@ -28,7 +28,7 @@ public final class LokiFileServerAPI : LokiDotNetAPI {
     public static func getDeviceLinks(associatedWith hexEncodedPublicKeys: Set<String>, in transaction: YapDatabaseReadWriteTransaction? = nil) -> Promise<Set<DeviceLink>> {
         let hexEncodedPublicKeysDescription = "[ \(hexEncodedPublicKeys.joined(separator: ", ")) ]"
         print("[Loki] Getting device links for: \(hexEncodedPublicKeysDescription).")
-        return getAuthToken(for: server, in: transaction).then(on: DispatchQueue.global()) { token -> Promise<Set<DeviceLink>> in
+        return getAuthToken(for: server).then(on: DispatchQueue.global()) { token -> Promise<Set<DeviceLink>> in
             let queryParameters = "ids=\(hexEncodedPublicKeys.map { "@\($0)" }.joined(separator: ","))&include_user_annotations=1"
             let url = URL(string: "\(server)/users?\(queryParameters)")!
             let request = TSRequest(url: url)
@@ -75,7 +75,7 @@ public final class LokiFileServerAPI : LokiDotNetAPI {
                     }
                 })
             }.map(on: DispatchQueue.global()) { deviceLinks -> Set<DeviceLink> in
-                storage.dbReadWriteConnection.readWrite { transaction in
+                Storage.write { transaction in
                     storage.setDeviceLinks(deviceLinks, in: transaction)
                 }
                 return deviceLinks
@@ -104,12 +104,12 @@ public final class LokiFileServerAPI : LokiDotNetAPI {
     /// Adds the given device link to the user's device mapping on the server.
     public static func addDeviceLink(_ deviceLink: DeviceLink) -> Promise<Void> {
         var deviceLinks: Set<DeviceLink> = []
-        storage.dbReadConnection.read { transaction in
+        Storage.read { transaction in
             deviceLinks = storage.getDeviceLinks(for: userHexEncodedPublicKey, in: transaction)
         }
         deviceLinks.insert(deviceLink)
         return setDeviceLinks(deviceLinks).map {
-            storage.dbReadWriteConnection.readWrite { transaction in
+            Storage.write { transaction in
                 storage.addDeviceLink(deviceLink, in: transaction)
             }
         }
@@ -118,12 +118,12 @@ public final class LokiFileServerAPI : LokiDotNetAPI {
     /// Removes the given device link from the user's device mapping on the server.
     public static func removeDeviceLink(_ deviceLink: DeviceLink) -> Promise<Void> {
         var deviceLinks: Set<DeviceLink> = []
-        storage.dbReadConnection.read { transaction in
+        Storage.read { transaction in
             deviceLinks = storage.getDeviceLinks(for: userHexEncodedPublicKey, in: transaction)
         }
         deviceLinks.remove(deviceLink)
         return setDeviceLinks(deviceLinks).map {
-            storage.dbReadWriteConnection.readWrite { transaction in
+            Storage.write { transaction in
                 storage.removeDeviceLink(deviceLink, in: transaction)
             }
         }

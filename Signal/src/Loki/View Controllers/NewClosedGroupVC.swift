@@ -5,7 +5,7 @@ final class NewClosedGroupVC : UIViewController, UITableViewDataSource, UITableV
     private lazy var contacts: [String] = {
         var result: [String] = []
         let storage = OWSPrimaryStorage.shared()
-        storage.dbReadConnection.read { transaction in
+        Storage.read { transaction in
             TSContactThread.enumerateCollectionObjects(with: transaction) { object, _ in
                 guard let thread = object as? TSContactThread, thread.isContactFriend else { return }
                 let hexEncodedPublicKey = thread.contactIdentifier()
@@ -20,7 +20,7 @@ final class NewClosedGroupVC : UIViewController, UITableViewDataSource, UITableV
         }
         let userHexEncodedPublicKey = getUserHexEncodedPublicKey()
         var linkedDeviceHexEncodedPublicKeys: Set<String> = [ userHexEncodedPublicKey ]
-        OWSPrimaryStorage.shared().dbReadConnection.read { transaction in
+        Storage.read { transaction in
             linkedDeviceHexEncodedPublicKeys = LokiDatabaseUtilities.getLinkedDeviceHexEncodedPublicKeys(for: userHexEncodedPublicKey, in: transaction)
         }
         result = result.filter { !linkedDeviceHexEncodedPublicKeys.contains($0) }

@@ -77,7 +77,7 @@ NS_ASSUME_NONNULL_BEGIN
         [knownMigrationIds addObject:migration.uniqueId];
     }
 
-    [self.primaryStorage.dbReadWriteConnection readWriteWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
+    [LKStorage writeWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
         NSArray<NSString *> *savedMigrationIds = [transaction allKeysInCollection:OWSDatabaseMigration.collection];
 
         NSMutableSet<NSString *> *unknownMigrationIds = [NSMutableSet new];

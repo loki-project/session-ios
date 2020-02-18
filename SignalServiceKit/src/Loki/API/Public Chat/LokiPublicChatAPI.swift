@@ -29,40 +29,40 @@ public final class LokiPublicChatAPI : LokiDotNetAPI {
     
     private static func getLastMessageServerID(for group: UInt64, on server: String) -> UInt? {
         var result: UInt? = nil
-        storage.dbReadConnection.read { transaction in
+        Storage.read { transaction in
             result = transaction.object(forKey: "\(server).\(group)", inCollection: lastMessageServerIDCollection) as! UInt?
         }
         return result
     }
     
     private static func setLastMessageServerID(for group: UInt64, on server: String, to newValue: UInt64) {
-        storage.dbReadWriteConnection.readWrite { transaction in
+        Storage.write { transaction in
             transaction.setObject(newValue, forKey: "\(server).\(group)", inCollection: lastMessageServerIDCollection)
         }
     }
     
     private static func removeLastMessageServerID(for group: UInt64, on server: String) {
-        storage.dbReadWriteConnection.readWrite { transaction in
+        Storage.write { transaction in
             transaction.removeObject(forKey: "\(server).\(group)", inCollection: lastMessageServerIDCollection)
         }
     }
     
     private static func getLastDeletionServerID(for group: UInt64, on server: String) -> UInt? {
         var result: UInt? = nil
-        storage.dbReadConnection.read { transaction in
+        Storage.read { transaction in
             result = transaction.object(forKey: "\(server).\(group)", inCollection: lastDeletionServerIDCollection) as! UInt?
         }
         return result
     }
     
     private static func setLastDeletionServerID(for group: UInt64, on server: String, to newValue: UInt64) {
-        storage.dbReadWriteConnection.readWrite { transaction in
+        Storage.write { transaction in
             transaction.setObject(newValue, forKey: "\(server).\(group)", inCollection: lastDeletionServerIDCollection)
         }
     }
     
     private static func removeLastDeletionServerID(for group: UInt64, on server: String) {
-        storage.dbReadWriteConnection.readWrite { transaction in
+        Storage.write { transaction in
             transaction.removeObject(forKey: "\(server).\(group)", inCollection: lastDeletionServerIDCollection)
         }
     }
@@ -142,7 +142,7 @@ public final class LokiPublicChatAPI : LokiDotNetAPI {
                     return nil
                 }
                 var existingMessageID: String? = nil
-                storage.dbReadConnection.read { transaction in
+                Storage.read { transaction in
                     existingMessageID = storage.getIDForMessage(withServerID: UInt(result.serverID!), in: transaction)
                 }
                 guard existingMessageID == nil else {
@@ -278,7 +278,7 @@ public final class LokiPublicChatAPI : LokiDotNetAPI {
                 }
                 let userCount = users.count
                 let storage = OWSPrimaryStorage.shared()
-                storage.dbReadWriteConnection.readWrite { transaction in
+                Storage.write { transaction in
                     storage.setUserCount(userCount, forPublicChatWithID: "\(server).\(channel)", in: transaction)
                 }
                 return userCount
@@ -300,7 +300,7 @@ public final class LokiPublicChatAPI : LokiDotNetAPI {
                     print("[Loki] Couldn't parse display names for users: \(hexEncodedPublicKeys) from: \(rawResponse).")
                     throw LokiDotNetAPIError.parsingFailed
                 }
-                storage.dbReadWriteConnection.readWrite { transaction in
+                Storage.write { transaction in
                     data.forEach { data in
                         guard let user = data["user"] as? JSON, let hexEncodedPublicKey = user["username"] as? String, let rawDisplayName = user["name"] as? String else { return }
                         let endIndex = hexEncodedPublicKey.endIndex

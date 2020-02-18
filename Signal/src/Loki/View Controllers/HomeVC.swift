@@ -316,7 +316,7 @@ final class HomeVC : UIViewController, UITableViewDataSource, UITableViewDelegat
     func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
         guard let threadID = self.thread(at: indexPath.row)?.uniqueId else { return false }
         var publicChat: LokiPublicChat?
-        OWSPrimaryStorage.shared().dbReadConnection.read { transaction in
+        uiDatabaseConnection.read { transaction in
             publicChat = LokiDatabaseUtilities.getPublicChat(for: threadID, in: transaction)
         }
         if let publicChat = publicChat {
@@ -329,14 +329,14 @@ final class HomeVC : UIViewController, UITableViewDataSource, UITableViewDelegat
     func tableView(_ tableView: UITableView, editActionsForRowAt indexPath: IndexPath) -> [UITableViewRowAction]? {
         guard let thread = self.thread(at: indexPath.row) else { return [] }
         var publicChat: LokiPublicChat?
-        OWSPrimaryStorage.shared().dbReadConnection.read { transaction in
+        uiDatabaseConnection.read { transaction in
             publicChat = LokiDatabaseUtilities.getPublicChat(for: thread.uniqueId!, in: transaction)
         }
         let delete = UITableViewRowAction(style: .destructive, title: NSLocalizedString("Delete", comment: "")) { [weak self] action, indexPath in
             let alert = UIAlertController(title: NSLocalizedString("CONVERSATION_DELETE_CONFIRMATION_ALERT_TITLE", comment: ""), message: NSLocalizedString("CONVERSATION_DELETE_CONFIRMATION_ALERT_MESSAGE", comment: ""), preferredStyle: .alert)
             alert.addAction(UIAlertAction(title: NSLocalizedString("TXT_DELETE_TITLE", comment: ""), style: .destructive) { _ in
                 guard let self = self else { return }
-                self.editingDatabaseConnection.readWrite { transaction in
+                Storage.write { transaction in
                     if let publicChat = publicChat {
                         var messageIDs: Set<String> = []
                         thread.enumerateInteractions(with: transaction) { interaction, _ in

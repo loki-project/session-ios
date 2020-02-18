@@ -1028,7 +1028,7 @@ const CGFloat kIconViewLength = 24;
     }
 
     if (self.disappearingMessagesConfiguration.dictionaryValueDidChange) {
-        [self.editingDatabaseConnection readWriteWithBlock:^(YapDatabaseReadWriteTransaction *_Nonnull transaction) {
+        [LKStorage writeWithBlock:^(YapDatabaseReadWriteTransaction *_Nonnull transaction) {
             [self.disappearingMessagesConfiguration saveWithTransaction:transaction];
             // MJK TODO - should be safe to remove this senderTimestamp
             OWSDisappearingConfigurationUpdateInfoMessage *infoMessage =
@@ -1162,7 +1162,7 @@ const CGFloat kIconViewLength = 24;
     TSOutgoingMessage *message =
         [TSOutgoingMessage outgoingMessageInThread:gThread groupMetaMessage:TSGroupMetaMessageQuit expiresInSeconds:0];
 
-    [self.editingDatabaseConnection readWriteWithBlock:^(YapDatabaseReadWriteTransaction *_Nonnull transaction) {
+    [LKStorage writeWithBlock:^(YapDatabaseReadWriteTransaction *_Nonnull transaction) {
         [self.messageSenderJobQueue addMessage:message transaction:transaction];
         [gThread leaveGroupWithTransaction:transaction];
     }];
@@ -1381,7 +1381,7 @@ const CGFloat kIconViewLength = 24;
 
 - (void)setThreadMutedUntilDate:(nullable NSDate *)value
 {
-    [self.editingDatabaseConnection readWriteWithBlock:^(YapDatabaseReadWriteTransaction * _Nonnull transaction) {
+    [LKStorage writeWithBlock:^(YapDatabaseReadWriteTransaction * _Nonnull transaction) {
         [self.thread updateWithMutedUntilDate:value transaction:transaction];
     }];
     
@@ -1448,7 +1448,7 @@ const CGFloat kIconViewLength = 24;
     didPickConversationColor:(OWSConversationColor *_Nonnull)conversationColor
 {
     OWSLogDebug(@"picked color: %@", conversationColor.name);
-    [self.editingDatabaseConnection readWriteWithBlock:^(YapDatabaseReadWriteTransaction *_Nonnull transaction) {
+    [LKStorage writeWithBlock:^(YapDatabaseReadWriteTransaction *_Nonnull transaction) {
         [self.thread updateConversationColorName:conversationColor.name transaction:transaction];
     }];
 

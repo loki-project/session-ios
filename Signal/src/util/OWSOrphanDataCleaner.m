@@ -19,6 +19,7 @@
 #import <SignalServiceKit/TSThread.h>
 #import <SignalServiceKit/YapDatabaseTransaction+OWS.h>
 #import <YapDatabase/YapDatabase.h>
+#import <SignalServiceKit/SignalServiceKit-Swift.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -525,7 +526,7 @@ typedef void (^OrphanDataBlock)(OWSOrphanData *);
                 success:^{
                     OWSLogInfo(@"Completed orphan data cleanup.");
 
-                    [databaseConnection readWriteWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
+                    [LKStorage writeWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
                         [transaction setObject:AppVersion.sharedInstance.currentAppVersion
                                         forKey:OWSOrphanDataCleaner_LastCleaningVersionKey
                                   inCollection:OWSOrphanDataCleaner_Collection];
@@ -613,7 +614,7 @@ typedef void (^OrphanDataBlock)(OWSOrphanData *);
     NSDate *appLaunchTime = CurrentAppContext().appLaunchTime;
     NSTimeInterval thresholdTimestamp = appLaunchTime.timeIntervalSince1970 - kMinimumOrphanAgeSeconds;
     NSDate *thresholdDate = [NSDate dateWithTimeIntervalSince1970:thresholdTimestamp];
-    [databaseConnection readWriteWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
+    [LKStorage writeWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
         NSUInteger interactionsRemoved = 0;
         for (NSString *interactionId in orphanData.interactionIds) {
             if (!self.isMainAppAndActive) {

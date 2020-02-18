@@ -69,7 +69,7 @@ NS_ASSUME_NONNULL_BEGIN
 
     [items addObject:[OWSTableItem itemWithTitle:@"Delete disappearing messages config"
                                      actionBlock:^{
-                                         [[OWSPrimaryStorage sharedManager].newDatabaseConnection readWriteWithBlock:^(
+                                         [LKStorage writeWithBlock:^(
                                              YapDatabaseReadWriteTransaction *_Nonnull transaction) {
                                              OWSDisappearingMessagesConfiguration *config =
                                                  [OWSDisappearingMessagesConfiguration
@@ -209,26 +209,25 @@ NS_ASSUME_NONNULL_BEGIN
 
 + (void)clearHasDismissedOffers
 {
-    [OWSPrimaryStorage.dbReadWriteConnection
-        readWriteWithBlock:^(YapDatabaseReadWriteTransaction *_Nonnull transaction) {
-            NSMutableArray<TSContactThread *> *contactThreads = [NSMutableArray new];
-            [transaction
-                enumerateKeysAndObjectsInCollection:[TSThread collection]
-                                         usingBlock:^(NSString *_Nonnull key, id _Nonnull object, BOOL *_Nonnull stop) {
-                                             TSThread *thread = object;
-                                             if (thread.isGroupThread) {
-                                                 return;
-                                             }
-                                             TSContactThread *contactThread = object;
-                                             [contactThreads addObject:contactThread];
-                                         }];
-            for (TSContactThread *contactThread in contactThreads) {
-                if (contactThread.hasDismissedOffers) {
-                    contactThread.hasDismissedOffers = NO;
-                    [contactThread saveWithTransaction:transaction];
-                }
+    [LKStorage writeWithBlock:^(YapDatabaseReadWriteTransaction *_Nonnull transaction) {
+        NSMutableArray<TSContactThread *> *contactThreads = [NSMutableArray new];
+        [transaction
+            enumerateKeysAndObjectsInCollection:[TSThread collection]
+                                     usingBlock:^(NSString *_Nonnull key, id _Nonnull object, BOOL *_Nonnull stop) {
+                                         TSThread *thread = object;
+                                         if (thread.isGroupThread) {
+                                             return;
+                                         }
+                                         TSContactThread *contactThread = object;
+                                         [contactThreads addObject:contactThread];
+                                     }];
+        for (TSContactThread *contactThread in contactThreads) {
+            if (contactThread.hasDismissedOffers) {
+                contactThread.hasDismissedOffers = NO;
+                [contactThread saveWithTransaction:transaction];
             }
-        }];
+        }
+    }];
 }
 
 + (void)sendEncryptedDatabase:(TSThread *)thread
@@ -237,17 +236,16 @@ NS_ASSUME_NONNULL_BEGIN
     NSString *fileName = filePath.lastPathComponent;
 
     __block BOOL success;
-    [OWSPrimaryStorage.sharedManager.newDatabaseConnection
-        readWriteWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
-            NSError *error;
-            success = [[NSFileManager defaultManager] copyItemAtPath:OWSPrimaryStorage.databaseFilePath
-                                                              toPath:filePath
-                                                               error:&error];
-            if (!success || error) {
-                OWSFailDebug(@"Could not copy database file: %@.", error);
-                success = NO;
-            }
-        }];
+    [LKStorage writeWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
+        NSError *error;
+        success = [[NSFileManager defaultManager] copyItemAtPath:OWSPrimaryStorage.databaseFilePath
+                                                          toPath:filePath
+                                                           error:&error];
+        if (!success || error) {
+            OWSFailDebug(@"Could not copy database file: %@.", error);
+            success = NO;
+        }
+    }];
 
     if (!success) {
         return;
@@ -268,7 +266,7 @@ NS_ASSUME_NONNULL_BEGIN
         OWSFailDebug(@"attachment[%@]: %@", [attachment sourceFilename], [attachment errorName]);
         return;
     }
-    [self.dbConnection readWithBlock:^(YapDatabaseReadTransaction *_Nonnull transaction) {
+    [LKStorage readWithBlock:^(YapDatabaseReadTransaction *_Nonnull transaction) {
         [ThreadUtil enqueueMessageWithText:nil
                           mediaAttachments:@[ attachment ]
                                   inThread:thread

@@ -97,7 +97,7 @@ public class OWSMessageSend: NSObject {
     @objc(copyWithDestination:)
     public func copy(with destination: LokiAPI.Destination) -> OWSMessageSend {
         var recipient: SignalRecipient!
-        OWSPrimaryStorage.shared().dbReadConnection.read { transaction in
+        Storage.read { transaction in
             recipient = SignalRecipient.getOrBuildUnsavedRecipient(forRecipientId: destination.hexEncodedPublicKey, transaction: transaction)
         }
         let success = (destination.kind == .master) ? self.success : { }

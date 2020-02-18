@@ -89,7 +89,7 @@ NSString *const TSGroupThread_NotificationKey_UniqueId = @"TSGroupThread_Notific
     OWSAssertDebug(groupId.length > 0);
 
     __block TSGroupThread *thread;
-    [[self dbReadWriteConnection] readWriteWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
+    [LKStorage writeWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
         thread = [self getOrCreateThreadWithGroupId:groupId groupType:groupType transaction:transaction];
     }];
     return thread;
@@ -117,7 +117,7 @@ NSString *const TSGroupThread_NotificationKey_UniqueId = @"TSGroupThread_Notific
     OWSAssertDebug(groupModel.groupId.length > 0);
 
     __block TSGroupThread *thread;
-    [[self dbReadWriteConnection] readWriteWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
+    [LKStorage writeWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
         thread = [self getOrCreateThreadWithGroupModel:groupModel transaction:transaction];
     }];
     return thread;
@@ -190,7 +190,7 @@ NSString *const TSGroupThread_NotificationKey_UniqueId = @"TSGroupThread_Notific
 - (BOOL)isLocalUserInGroup
 {
     __block BOOL result = NO;
-    [OWSPrimaryStorage.sharedManager.dbReadConnection readWithBlock:^(YapDatabaseReadTransaction *transaction) {
+    [LKStorage readWithBlock:^(YapDatabaseReadTransaction *transaction) {
         result = [self isLocalUserInGroupWithTransaction:transaction];
     }];
     return result;
@@ -220,7 +220,7 @@ NSString *const TSGroupThread_NotificationKey_UniqueId = @"TSGroupThread_Notific
 
 - (void)leaveGroupWithSneakyTransaction
 {
-    [self.dbReadWriteConnection readWriteWithBlock:^(YapDatabaseReadWriteTransaction *_Nonnull transaction) {
+    [LKStorage writeWithBlock:^(YapDatabaseReadWriteTransaction *_Nonnull transaction) {
         [self leaveGroupWithTransaction:transaction];
     }];
 }
@@ -245,7 +245,7 @@ NSString *const TSGroupThread_NotificationKey_UniqueId = @"TSGroupThread_Notific
 
 - (void)updateAvatarWithAttachmentStream:(TSAttachmentStream *)attachmentStream
 {
-    [self.dbReadWriteConnection readWriteWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
+    [LKStorage writeWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
         [self updateAvatarWithAttachmentStream:attachmentStream transaction:transaction];
     }];
 }

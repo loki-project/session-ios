@@ -8,6 +8,7 @@
 #import <AxolotlKit/SignedPrekeyRecord.h>
 #import <Curve25519Kit/Curve25519.h>
 #import <YapDatabase/YapDatabaseTransaction.h>
+#import <SignalServiceKit/SignalServiceKit-Swift.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -118,7 +119,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)purgeCollection:(NSString *)collection
 {
-    [self readWriteWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
+    [LKStorage writeWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
         [transaction removeAllObjectsInCollection:collection];
     }];
 }
@@ -128,7 +129,7 @@ NS_ASSUME_NONNULL_BEGIN
     OWSAssertDebug(key.length > 0);
     OWSAssertDebug(collection.length > 0);
 
-    [self readWriteWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
+    [LKStorage writeWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
         [transaction setObject:object forKey:key inCollection:collection];
     }];
 }
@@ -160,7 +161,7 @@ NS_ASSUME_NONNULL_BEGIN
     OWSAssertDebug(key.length > 0);
     OWSAssertDebug(collection.length > 0);
 
-    [self readWriteWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
+    [LKStorage writeWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
         [transaction removeObjectForKey:key inCollection:collection];
     }];
 }
@@ -176,7 +177,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (int)incrementIntForKey:(NSString *)key inCollection:(NSString *)collection
 {
     __block int value = 0;
-    [self readWriteWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
+    [LKStorage writeWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
         value = [[transaction objectForKey:key inCollection:collection] intValue];
         value++;
         [transaction setObject:@(value) forKey:key inCollection:collection];

@@ -340,7 +340,7 @@ NSString *const OWSContactsManagerKeyNextFullIntersectionDate = @"OWSContactsMan
     OWSAssertDebug(recipientIdsForIntersection.count > 0);
 
     dispatch_async(self.serialQueue, ^{
-        [self.dbReadConnection readWriteWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
+        [LKStorage writeWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
             [transaction setObject:recipientIdsForIntersection
                             forKey:OWSContactsManagerKeyLastKnownContactPhoneNumbers
                       inCollection:OWSContactsManagerCollection];
@@ -522,7 +522,7 @@ NSString *const OWSContactsManagerKeyNextFullIntersectionDate = @"OWSContactsMan
         }
 
         // Update cached SignalAccounts on disk
-        [self.dbWriteConnection readWriteWithBlock:^(YapDatabaseReadWriteTransaction *_Nonnull transaction) {
+        [LKStorage writeWithBlock:^(YapDatabaseReadWriteTransaction *_Nonnull transaction) {
             OWSLogInfo(@"Saving %lu SignalAccounts", (unsigned long)accountsToSave.count);
             for (SignalAccount *signalAccount in accountsToSave) {
                 OWSLogVerbose(@"Saving SignalAccount: %@", signalAccount);

@@ -125,7 +125,7 @@ NSString *const OWSMessageDecryptJobFinderExtensionGroup = @"OWSMessageProcessin
 - (OWSMessageDecryptJob *_Nullable)nextJob
 {
     __block OWSMessageDecryptJob *_Nullable job = nil;
-    [self.dbConnection readWithBlock:^(YapDatabaseReadTransaction *_Nonnull transaction) {
+    [LKStorage readWithBlock:^(YapDatabaseReadTransaction *_Nonnull transaction) {
         YapDatabaseViewTransaction *viewTransaction = [transaction ext:OWSMessageDecryptJobFinderExtensionName];
         OWSAssertDebug(viewTransaction != nil);
         job = [viewTransaction firstObjectInGroup:OWSMessageDecryptJobFinderExtensionGroup];
@@ -136,7 +136,7 @@ NSString *const OWSMessageDecryptJobFinderExtensionGroup = @"OWSMessageProcessin
 
 - (void)addJobForEnvelopeData:(NSData *)envelopeData
 {
-    [self.dbConnection readWriteWithBlock:^(YapDatabaseReadWriteTransaction *_Nonnull transaction) {
+    [LKStorage writeWithBlock:^(YapDatabaseReadWriteTransaction *_Nonnull transaction) {
         OWSMessageDecryptJob *job = [[OWSMessageDecryptJob alloc] initWithEnvelopeData:envelopeData];
         [job saveWithTransaction:transaction];
     }];
@@ -144,7 +144,7 @@ NSString *const OWSMessageDecryptJobFinderExtensionGroup = @"OWSMessageProcessin
 
 - (void)removeJobWithId:(NSString *)uniqueId
 {
-    [self.dbConnection readWriteWithBlock:^(YapDatabaseReadWriteTransaction *_Nonnull transaction) {
+    [LKStorage writeWithBlock:^(YapDatabaseReadWriteTransaction *_Nonnull transaction) {
         [transaction removeObjectForKey:uniqueId inCollection:[OWSMessageDecryptJob collection]];
     }];
 }
@@ -375,7 +375,7 @@ NSString *const OWSMessageDecryptJobFinderExtensionGroup = @"OWSMessageProcessin
     if (!envelope) {
         OWSFailDebug(@"Couldn't parse proto.");
 
-        [self.dbConnection readWriteWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
+        [LKStorage writeWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
             TSErrorMessage *errorMessage = [TSErrorMessage corruptedMessageInUnknownThread];
             [SSKEnvironment.shared.notificationsManager notifyUserForThreadlessErrorMessage:errorMessage
                                                                                 transaction:transaction];

@@ -565,7 +565,7 @@ typedef enum : NSUInteger {
                                                           userInfo:nil
                                                            repeats:YES];
 
-    [LKAPI populateUserHexEncodedPublicKeyCacheIfNeededFor:thread.uniqueId in:nil];
+    [LKAPI populateUserHexEncodedPublicKeyCacheIfNeededFor:thread.uniqueId];
 }
 
 - (void)dealloc
@@ -684,7 +684,7 @@ typedef enum : NSUInteger {
         TSGroupThread *thread = (TSGroupThread *)self.thread;
         if (thread.isRSSFeed) { return; }
         __block LKPublicChat *publicChat;
-        [OWSPrimaryStorage.sharedManager.dbReadConnection readWithBlock:^(YapDatabaseReadTransaction *transaction) {
+        [LKStorage readWithBlock:^(YapDatabaseReadTransaction *transaction) {
             publicChat = [LKDatabaseUtilities getPublicChatForThreadID:thread.uniqueId transaction:transaction];
         }];
         [LKPublicChatAPI getUserCountForGroup:publicChat.channel onServer:publicChat.server]
@@ -1660,7 +1660,7 @@ typedef enum : NSUInteger {
         NSString *senderID = ((TSContactThread *)self.thread).contactIdentifier;
         __block NSSet<TSContactThread *> *linkedDeviceThreads;
         __block BOOL isNoteToSelf;
-        [OWSPrimaryStorage.sharedManager.dbReadWriteConnection readWriteWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
+        [LKStorage writeWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
             linkedDeviceThreads = [LKDatabaseUtilities getLinkedDeviceThreadsFor:senderID in:transaction];
             isNoteToSelf = [LKDatabaseUtilities isUserLinkedDevice:senderID in:transaction];
         }];
@@ -2365,12 +2365,11 @@ typedef enum : NSUInteger {
                                    OWSLogInfo(@"Blocking an unknown user.");
                                    [self.blockingManager addBlockedPhoneNumber:interaction.recipientId];
                                    // Delete the offers.
-                                   [self.editingDatabaseConnection
-                                       readWriteWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
-                                           contactThread.hasDismissedOffers = YES;
-                                           [contactThread saveWithTransaction:transaction];
-                                           [interaction removeWithTransaction:transaction];
-                                       }];
+                                   [LKStorage writeWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
+                                       contactThread.hasDismissedOffers = YES;
+                                       [contactThread saveWithTransaction:transaction];
+                                       [interaction removeWithTransaction:transaction];
+                                   }];
                                }];
     [actionSheet addAction:blockAction];
 
@@ -2394,7 +2393,7 @@ typedef enum : NSUInteger {
                                                         editImmediately:YES];
 
     // Delete the offers.
-    [self.editingDatabaseConnection readWriteWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
+    [LKStorage writeWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
         contactThread.hasDismissedOffers = YES;
         [contactThread saveWithTransaction:transaction];
         [interaction removeWithTransaction:transaction];
@@ -2412,7 +2411,7 @@ typedef enum : NSUInteger {
 
     [self presentAddThreadToProfileWhitelistWithSuccess:^() {
         // Delete the offers.
-        [self.editingDatabaseConnection readWriteWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
+        [LKStorage writeWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
             contactThread.hasDismissedOffers = YES;
             [contactThread saveWithTransaction:transaction];
             [interaction removeWithTransaction:transaction];
@@ -2590,18 +2589,16 @@ typedef enum : NSUInteger {
             success:^(NSArray<TSAttachmentStream *> *attachmentStreams) {
                 OWSAssertDebug(attachmentStreams.count == 1);
                 TSAttachmentStream *attachmentStream = attachmentStreams.firstObject;
-                [self.editingDatabaseConnection
-                    readWriteWithBlock:^(YapDatabaseReadWriteTransaction *postSuccessTransaction) {
-                        [message setQuotedMessageThumbnailAttachmentStream:attachmentStream];
-                        [message saveWithTransaction:postSuccessTransaction];
-                    }];
+                [LKStorage writeWithBlock:^(YapDatabaseReadWriteTransaction *postSuccessTransaction) {
+                    [message setQuotedMessageThumbnailAttachmentStream:attachmentStream];
+                    [message saveWithTransaction:postSuccessTransaction];
+                }];
             }
             failure:^(NSError *error) {
                 OWSLogWarn(@"Failed to redownload thumbnail with error: %@", error);
-                [self.editingDatabaseConnection
-                    readWriteWithBlock:^(YapDatabaseReadWriteTransaction *postSuccessTransaction) {
-                        [message touchWithTransaction:postSuccessTransaction];
-                    }];
+                [LKStorage writeWithBlock:^(YapDatabaseReadWriteTransaction *postSuccessTransaction) {
+                    [message touchWithTransaction:postSuccessTransaction];
+                }];
             }];
     }];
 }
@@ -3700,7 +3697,7 @@ typedef enum : NSUInteger {
     __block TSGroupThread *groupThread;
     __block TSOutgoingMessage *message;
 
-    [self.editingDatabaseConnection readWriteWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
+    [LKStorage writeWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
         groupThread = [TSGroupThread getOrCreateThreadWithGroupModel:newGroupModel transaction:transaction];
 
         NSString *updateGroupInfo =
@@ -4488,7 +4485,7 @@ typedef enum : NSUInteger {
     // subset of their devices that haven't sent a friend request.
     NSString *senderID = friendRequest.authorId;
     __block NSSet<TSContactThread *> *linkedDeviceThreads;
-    [OWSPrimaryStorage.sharedManager.dbReadWriteConnection readWriteWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
+    [LKStorage writeWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
         linkedDeviceThreads = [LKDatabaseUtilities getLinkedDeviceThreadsFor:senderID in:transaction];
     }];
     for (TSContactThread *thread in linkedDeviceThreads) {
@@ -4513,7 +4510,7 @@ typedef enum : NSUInteger {
     // Delete prekeys
     NSString *contactID = friendRequest.authorId;
     OWSPrimaryStorage *primaryStorage = SSKEnvironment.shared.primaryStorage;
-    [self.editingDatabaseConnection readWriteWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
+    [LKStorage writeWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
         [primaryStorage removePreKeyBundleForContact:contactID transaction:transaction];
     }];
 }

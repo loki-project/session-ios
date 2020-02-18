@@ -21,7 +21,7 @@ public extension YapDatabaseConnection {
     func read(_ block: @escaping (YapDatabaseReadTransaction) throws -> Void) throws {
         var errorToRaise: Error?
 
-        read { transaction in
+        Storage.read { transaction in
             do {
                 try block(transaction)
             } catch {
@@ -37,7 +37,7 @@ public extension YapDatabaseConnection {
     func readWrite(_ block: @escaping (YapDatabaseReadWriteTransaction) throws -> Void) throws {
         var errorToRaise: Error?
 
-        readWrite { transaction in
+        Storage.write { transaction in
             do {
                 try block(transaction)
             } catch {

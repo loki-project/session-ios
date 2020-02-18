@@ -670,7 +670,7 @@ NSString *NSStringForOutgoingMessageRecipientState(OWSOutgoingMessageRecipientSt
 
 - (void)updateWithCustomMessage:(NSString *)customMessage
 {
-    [self.dbReadWriteConnection readWriteWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
+    [LKStorage writeWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
         [self updateWithCustomMessage:customMessage transaction:transaction];
     }];
 }

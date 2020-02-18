@@ -717,25 +717,24 @@ typedef void (^BuildOutgoingMessageCompletionBlock)(TSOutgoingMessage *savedMess
 {
     OWSLogInfo(@"");
 
-    [OWSPrimaryStorage.sharedManager.newDatabaseConnection
-        readWriteWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
-            [self removeAllObjectsInCollection:[TSThread collection]
-                                         class:[TSThread class]
+    [LKStorage writeWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
+        [self removeAllObjectsInCollection:[TSThread collection]
+                                     class:[TSThread class]
+                               transaction:transaction];
+        [self removeAllObjectsInCollection:[TSInteraction collection]
+                                     class:[TSInteraction class]
+                               transaction:transaction];
+        [self removeAllObjectsInCollection:[TSAttachment collection]
+                                     class:[TSAttachment class]
+                               transaction:transaction];
+        @try {
+            [self removeAllObjectsInCollection:[SignalRecipient collection]
+                                         class:[SignalRecipient class]
                                    transaction:transaction];
-            [self removeAllObjectsInCollection:[TSInteraction collection]
-                                         class:[TSInteraction class]
-                                   transaction:transaction];
-            [self removeAllObjectsInCollection:[TSAttachment collection]
-                                         class:[TSAttachment class]
-                                   transaction:transaction];
-            @try {
-                [self removeAllObjectsInCollection:[SignalRecipient collection]
-                                             class:[SignalRecipient class]
-                                       transaction:transaction];
-            } @catch (NSException *exception) {
-                // Do nothing
-            }
-        }];
+        } @catch (NSException *exception) {
+            // Do nothing
+        }
+    }];
     [TSAttachmentStream deleteAttachments];
 }
 

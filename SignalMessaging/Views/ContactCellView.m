@@ -137,7 +137,7 @@ const CGFloat kContactCellAvatarTextMargin = 12;
 
     self.recipientId = recipientId;
 
-    [self.primaryStorage.dbReadConnection readWithBlock:^(YapDatabaseReadTransaction *transaction) {
+    [LKStorage readWithBlock:^(YapDatabaseReadTransaction *transaction) {
         self.thread = [TSContactThread getThreadWithContactId:recipientId transaction:transaction];
     }];
 

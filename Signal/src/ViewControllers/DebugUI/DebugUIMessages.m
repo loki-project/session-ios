@@ -255,7 +255,7 @@ NS_ASSUME_NONNULL_BEGIN
                   OWSSyncGroupsRequestMessage *syncGroupsRequestMessage = [[OWSSyncGroupsRequestMessage alloc]
                       initWithThread:thread
                              groupId:[Randomness generateRandomBytes:kGroupIdLength]];
-                  [self.dbConnection readWriteWithBlock:^(YapDatabaseReadWriteTransaction *_Nonnull transaction) {
+                  [LKStorage writeWithBlock:^(YapDatabaseReadWriteTransaction *_Nonnull transaction) {
                       [self.messageSenderJobQueue addMessage:syncGroupsRequestMessage transaction:transaction];
                   }];
               }],
@@ -363,7 +363,7 @@ NS_ASSUME_NONNULL_BEGIN
     NSString *randomText = [self randomText];
     NSString *text = [[[@(counter) description] stringByAppendingString:@" "] stringByAppendingString:randomText];
     __block TSOutgoingMessage *message;
-    [self.dbConnection readWriteWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
+    [LKStorage writeWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
         message = [ThreadUtil enqueueMessageWithText:text
                                             inThread:thread
                                     quotedReplyModel:nil
@@ -1743,7 +1743,7 @@ NS_ASSUME_NONNULL_BEGIN
                 thread:(TSThread *)thread
            messageBody:(nullable NSString *)messageBody
 {
-    [self.dbConnection readWithBlock:^(YapDatabaseReadTransaction *_Nonnull transaction) {
+    [LKStorage readWithBlock:^(YapDatabaseReadTransaction *_Nonnull transaction) {
         NSArray<SignalAttachment *> *attachments = @[];
         if (attachment != nil) {
             attachments = @[ attachment ];
@@ -3429,7 +3429,7 @@ typedef OWSContact * (^OWSContactBlock)(YapDatabaseReadWriteTransaction *transac
 
     NSMutableArray<TSInteraction *> *result = [NSMutableArray new];
 
-    [OWSPrimaryStorage.dbReadWriteConnection readWriteWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
+    [LKStorage writeWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
         if ([thread isKindOfClass:[TSContactThread class]]) {
             TSContactThread *contactThread = (TSContactThread *)thread;
 
@@ -3616,7 +3616,7 @@ typedef OWSContact * (^OWSContactBlock)(YapDatabaseReadWriteTransaction *transac
     OWSAssertDebug(thread);
 
     NSArray<TSInteraction *> *messages = [self unsavedSystemMessagesInThread:thread];
-    [OWSPrimaryStorage.dbReadWriteConnection readWriteWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
+    [LKStorage writeWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
         for (TSInteraction *message in messages) {
             [message saveWithTransaction:transaction];
         }
@@ -3629,7 +3629,7 @@ typedef OWSContact * (^OWSContactBlock)(YapDatabaseReadWriteTransaction *transac
 
     NSArray<TSInteraction *> *messages = [self unsavedSystemMessagesInThread:thread];
     TSInteraction *message = messages[(NSUInteger)arc4random_uniform((uint32_t)messages.count)];
-    [OWSPrimaryStorage.dbReadWriteConnection readWriteWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
+    [LKStorage writeWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
         [message saveWithTransaction:transaction];
     }];
 }
@@ -3716,7 +3716,7 @@ typedef OWSContact * (^OWSContactBlock)(YapDatabaseReadWriteTransaction *transac
 {
     const NSUInteger kMaxBatchSize = 2500;
     if (counter < kMaxBatchSize) {
-        [OWSPrimaryStorage.dbReadWriteConnection readWriteWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
+        [LKStorage writeWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
             [self sendFakeMessages:counter thread:thread isTextOnly:isTextOnly transaction:transaction];
         }];
     } else {
@@ -3724,10 +3724,9 @@ typedef OWSContact * (^OWSContactBlock)(YapDatabaseReadWriteTransaction *transac
             NSUInteger remainder = counter;
             while (remainder > 0) {
                 NSUInteger batchSize = MIN(kMaxBatchSize, remainder);
-                [OWSPrimaryStorage.dbReadWriteConnection
-                    readWriteWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
-                        [self sendFakeMessages:batchSize thread:thread isTextOnly:isTextOnly transaction:transaction];
-                    }];
+                [LKStorage writeWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
+                    [self sendFakeMessages:batchSize thread:thread isTextOnly:isTextOnly transaction:transaction];
+                }];
                 remainder -= batchSize;
                 OWSLogInfo(@"sendFakeMessages %lu / %lu", (unsigned long)(counter - remainder), (unsigned long)counter);
             }
@@ -3882,7 +3881,7 @@ typedef OWSContact * (^OWSContactBlock)(YapDatabaseReadWriteTransaction *transac
     TSGroupModel *groupModel = [[TSGroupModel alloc] initWithTitle:groupName memberIds:recipientIds image:nil groupId:groupId groupType:closedGroup adminIds:@[ TSAccountManager.localNumber ]];
 
     __block TSGroupThread *thread;
-    [self.dbConnection readWriteWithBlock:^(YapDatabaseReadWriteTransaction *_Nonnull transaction) {
+    [LKStorage writeWithBlock:^(YapDatabaseReadWriteTransaction *_Nonnull transaction) {
         thread = [TSGroupThread getOrCreateThreadWithGroupModel:groupModel transaction:transaction];
         OWSAssertDebug(thread);
 
@@ -3895,7 +3894,7 @@ typedef OWSContact * (^OWSContactBlock)(YapDatabaseReadWriteTransaction *transac
     }];
 
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)1.f * NSEC_PER_SEC), dispatch_get_main_queue(), ^{
-        [self.dbConnection readWriteWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
+        [LKStorage writeWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
             [ThreadUtil enqueueMessageWithText:[@(counter) description]
                                       inThread:thread
                               quotedReplyModel:nil
@@ -3970,7 +3969,7 @@ typedef OWSContact * (^OWSContactBlock)(YapDatabaseReadWriteTransaction *transac
         return;
     }
 
-    [OWSPrimaryStorage.dbReadWriteConnection readWriteWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
+    [LKStorage writeWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
         [SSKEnvironment.shared.batchMessageProcessor enqueueEnvelopeData:envelopeData
                                                            plaintextData:plaintextData
                                                          wasReceivedByUD:NO
@@ -4035,7 +4034,7 @@ typedef OWSContact * (^OWSContactBlock)(YapDatabaseReadWriteTransaction *transac
             [self resurrectNewOutgoingMessages2:messageCount thread:thread transaction:transaction];
         },
     ];
-    [OWSPrimaryStorage.dbReadWriteConnection readWriteWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
+    [LKStorage writeWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
         NSUInteger actionCount = 1 + (NSUInteger)arc4random_uniform(3);
         for (NSUInteger actionIdx = 0; actionIdx < actionCount; actionIdx++) {
             TransactionBlock actionBlock = actionBlocks[(NSUInteger)arc4random_uniform((uint32_t)actionBlocks.count)];
@@ -4190,7 +4189,7 @@ typedef OWSContact * (^OWSContactBlock)(YapDatabaseReadWriteTransaction *transac
 
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1.f * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
         OWSLogInfo(@"resurrectNewOutgoingMessages1.2: %zd", count);
-        [OWSPrimaryStorage.dbReadWriteConnection readWriteWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
+        [LKStorage writeWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
             for (TSOutgoingMessage *message in messages) {
                 [message removeWithTransaction:transaction];
             }
@@ -4237,19 +4236,18 @@ typedef OWSContact * (^OWSContactBlock)(YapDatabaseReadWriteTransaction *transac
 
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1.f * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
         OWSLogInfo(@"resurrectNewOutgoingMessages2.2: %zd", count);
-        [OWSPrimaryStorage.dbReadWriteConnection readWriteWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
+        [LKStorage writeWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
             for (TSOutgoingMessage *message in messages) {
                 [message removeWithTransaction:transaction];
             }
         }];
         dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1.f * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
             OWSLogInfo(@"resurrectNewOutgoingMessages2.3: %zd", count);
-            [OWSPrimaryStorage.dbReadWriteConnection
-                readWriteWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
-                    for (TSOutgoingMessage *message in messages) {
-                        [message saveWithTransaction:transaction];
-                    }
-                }];
+            [LKStorage writeWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
+                for (TSOutgoingMessage *message in messages) {
+                    [message saveWithTransaction:transaction];
+                }
+            }];
         });
     });
 }
@@ -4278,7 +4276,7 @@ typedef OWSContact * (^OWSContactBlock)(YapDatabaseReadWriteTransaction *transac
     [recipientIds removeObject:TSAccountManager.localNumber];
     NSString *recipientId = (recipientIds.count > 0 ? recipientIds.firstObject : @"+19174054215");
 
-    [OWSPrimaryStorage.dbReadWriteConnection readWriteWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
+    [LKStorage writeWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
         for (NSNumber *timestamp in timestamps) {
             NSString *randomText = [self randomText];
             {
@@ -4362,8 +4360,7 @@ typedef OWSContact * (^OWSContactBlock)(YapDatabaseReadWriteTransaction *transac
                                      @"https://кц.рф/some/path",
                                      @"http://foo.кц.рф"];
 
-    [OWSPrimaryStorage.sharedManager.dbReadWriteConnection
-     readWriteWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
+    [LKStorage writeWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
          for (NSString *string in strings) {
              // DO NOT log these strings with the debugger attached.
              //        OWSLogInfo(@"%@", string);
@@ -4404,8 +4401,7 @@ typedef OWSContact * (^OWSContactBlock)(YapDatabaseReadWriteTransaction *transac
         @"non-crashing string",
     ];
 
-    [OWSPrimaryStorage.sharedManager.dbReadWriteConnection
-        readWriteWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
+    [LKStorage writeWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
             for (NSString *string in strings) {
                 // DO NOT log these strings with the debugger attached.
                 //        OWSLogInfo(@"%@", string);
@@ -4445,37 +4441,36 @@ typedef OWSContact * (^OWSContactBlock)(YapDatabaseReadWriteTransaction *transac
         @"This is some normal text",
     ];
 
-    [OWSPrimaryStorage.sharedManager.dbReadWriteConnection
-        readWriteWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
-            for (NSString *string in strings) {
-                OWSLogInfo(@"sending zalgo");
+    [LKStorage writeWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
+        for (NSString *string in strings) {
+            OWSLogInfo(@"sending zalgo");
 
-                {
-                    [self createFakeIncomingMessage:thread
-                                        messageBody:string
-                                    fakeAssetLoader:nil
-                             isAttachmentDownloaded:NO
-                                      quotedMessage:nil
-                                        transaction:transaction];
-                }
-                {
-                    NSString *recipientId = @"+19174054215";
-                    NSString *groupName = string;
-                    NSMutableArray<NSString *> *recipientIds = [@[
-                        recipientId,
-                        TSAccountManager.localNumber,
-                    ] mutableCopy];
-                    NSData *groupId = [Randomness generateRandomBytes:kGroupIdLength];
-                    // TODO: Figure out if this is correct
-                    TSGroupModel *groupModel =
-                        [[TSGroupModel alloc] initWithTitle:groupName memberIds:recipientIds image:nil groupId:groupId groupType:closedGroup adminIds:@[ TSAccountManager.localNumber ]];
-
-                    TSGroupThread *groupThread =
-                        [TSGroupThread getOrCreateThreadWithGroupModel:groupModel transaction:transaction];
-                    OWSAssertDebug(groupThread);
-                }
+            {
+                [self createFakeIncomingMessage:thread
+                                    messageBody:string
+                                fakeAssetLoader:nil
+                         isAttachmentDownloaded:NO
+                                  quotedMessage:nil
+                                    transaction:transaction];
             }
-        }];
+            {
+                NSString *recipientId = @"+19174054215";
+                NSString *groupName = string;
+                NSMutableArray<NSString *> *recipientIds = [@[
+                    recipientId,
+                    TSAccountManager.localNumber,
+                ] mutableCopy];
+                NSData *groupId = [Randomness generateRandomBytes:kGroupIdLength];
+                // TODO: Figure out if this is correct
+                TSGroupModel *groupModel =
+                    [[TSGroupModel alloc] initWithTitle:groupName memberIds:recipientIds image:nil groupId:groupId groupType:closedGroup adminIds:@[ TSAccountManager.localNumber ]];
+
+                TSGroupThread *groupThread =
+                    [TSGroupThread getOrCreateThreadWithGroupModel:groupModel transaction:transaction];
+                OWSAssertDebug(groupThread);
+            }
+        }
+    }];
 }
 
 + (void)testDirectionalFilenamesInThread:(TSThread *)thread
@@ -4517,10 +4512,9 @@ typedef OWSContact * (^OWSContactBlock)(YapDatabaseReadWriteTransaction *transac
 
 + (void)deleteAllMessagesInThread:(TSThread *)thread
 {
-    [OWSPrimaryStorage.sharedManager.newDatabaseConnection
-        readWriteWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
-            [thread removeAllThreadInteractionsWithTransaction:transaction];
-        }];
+    [LKStorage writeWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
+        [thread removeAllThreadInteractionsWithTransaction:transaction];
+    }];
 }
 
 #pragma mark - Utility
@@ -4821,7 +4815,7 @@ typedef OWSContact * (^OWSContactBlock)(YapDatabaseReadWriteTransaction *transac
         [attachments addObject:attachment];
     }
 
-    [self.dbConnection readWithBlock:^(YapDatabaseReadTransaction *transaction) {
+    [LKStorage readWithBlock:^(YapDatabaseReadTransaction *transaction) {
         TSOutgoingMessage *message = [ThreadUtil enqueueMessageWithText:messageBody
                                                        mediaAttachments:attachments
                                                                inThread:thread

@@ -59,7 +59,7 @@ public final class LokiPublicChatPoller : NSObject {
             func proceed() {
                 let storage = OWSPrimaryStorage.shared()
                 var newDisplayNameUpdatees: Set<String> = []
-                storage.dbReadConnection.read { transaction in
+                Storage.read { transaction in
                     newDisplayNameUpdatees = Set(uniqueHexEncodedPublicKeys.filter { storage.getMasterHexEncodedPublicKey(for: $0, in: transaction) != $0 }.compactMap { storage.getMasterHexEncodedPublicKey(for: $0, in: transaction) })
                 }
                 if !newDisplayNameUpdatees.isEmpty {
@@ -69,11 +69,11 @@ public final class LokiPublicChatPoller : NSObject {
                 // Sorting the messages by timestamp before importing them fixes an issue where messages that quote older messages can't find those older messages
                 messages.sorted { $0.timestamp < $1.timestamp }.forEach { message in
                     var wasSentByCurrentUser = false
-                    OWSPrimaryStorage.shared().dbReadConnection.read { transaction in
+                    Storage.read { transaction in
                         wasSentByCurrentUser = LokiDatabaseUtilities.isUserLinkedDevice(message.hexEncodedPublicKey, transaction: transaction)
                     }
                     var masterHexEncodedPublicKey: String? = nil
-                    storage.dbReadConnection.read { transaction in
+                    Storage.read { transaction in
                         masterHexEncodedPublicKey = storage.getMasterHexEncodedPublicKey(for: message.hexEncodedPublicKey, in: transaction)
                     }
                     let senderHexEncodedPublicKey = masterHexEncodedPublicKey ?? message.hexEncodedPublicKey
@@ -163,7 +163,7 @@ public final class LokiPublicChatPoller : NSObject {
                     envelope.setSource(senderHexEncodedPublicKey)
                     envelope.setSourceDevice(OWSDevicePrimaryDeviceId)
                     envelope.setContent(try! content.build().serializedData())
-                    storage.dbReadWriteConnection.readWrite { transaction in
+                    Storage.write { transaction in
                         transaction.setObject(senderDisplayName, forKey: senderHexEncodedPublicKey, inCollection: publicChat.id)
                         let messageServerID = message.serverID
                         SSKEnvironment.shared.messageManager.throws_processEnvelope(try! envelope.build(), plaintextData: try! content.build().serializedData(), wasReceivedByUD: false, transaction: transaction, serverID: messageServerID ?? 0)
@@ -189,7 +189,7 @@ public final class LokiPublicChatPoller : NSObject {
             }
             if !hexEncodedPublicKeysToUpdate.isEmpty {
                 let storage = OWSPrimaryStorage.shared()
-                storage.dbReadConnection.read { transaction in
+                Storage.read { transaction in
                     LokiFileServerAPI.getDeviceLinks(associatedWith: hexEncodedPublicKeysToUpdate).done(on: DispatchQueue.global()) { _ in
                         proceed()
                         hexEncodedPublicKeysToUpdate.forEach {
@@ -215,7 +215,7 @@ public final class LokiPublicChatPoller : NSObject {
         let publicChat = self.publicChat
         let _ = LokiPublicChatAPI.getDeletedMessageServerIDs(for: publicChat.channel, on: publicChat.server).done(on: DispatchQueue.global()) { deletedMessageServerIDs in
             let storage = OWSPrimaryStorage.shared()
-            storage.dbReadWriteConnection.readWrite { transaction in
+            Storage.write { transaction in
                 let deletedMessageIDs = deletedMessageServerIDs.compactMap { storage.getIDForMessage(withServerID: UInt($0), in: transaction) }
                 deletedMessageIDs.forEach { messageID in
                     TSMessage.fetch(uniqueId: messageID)?.remove(with: transaction)

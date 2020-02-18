@@ -51,7 +51,7 @@ NS_ASSUME_NONNULL_BEGIN
                             }],
             [OWSTableItem itemWithTitle:@"Delete all sessions"
                             actionBlock:^{
-                                [self.dbConnection readWriteWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
+                                [LKStorage writeWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
                                     [[OWSPrimaryStorage sharedManager]
                                         deleteAllSessionsForContact:thread.contactIdentifier
                                                     protocolContext:transaction];
@@ -59,16 +59,15 @@ NS_ASSUME_NONNULL_BEGIN
                             }],
             [OWSTableItem itemWithTitle:@"Archive all sessions"
                             actionBlock:^{
-                                [self.dbConnection
-                                    readWriteWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
-                                        [[OWSPrimaryStorage sharedManager]
-                                            archiveAllSessionsForContact:thread.contactIdentifier
-                                                         protocolContext:transaction];
-                                    }];
+                                [LKStorage writeWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
+                                    [[OWSPrimaryStorage sharedManager]
+                                        archiveAllSessionsForContact:thread.contactIdentifier
+                                                     protocolContext:transaction];
+                                }];
                             }],
             [OWSTableItem itemWithTitle:@"Send session reset"
                             actionBlock:^{
-                                [self.dbConnection readWriteWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
+                                [LKStorage writeWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
                                     [self.sessionResetJobQueue addContactThread:thread transaction:transaction];
                                 }];
                             }],
@@ -110,29 +109,26 @@ NS_ASSUME_NONNULL_BEGIN
 #if DEBUG
 + (void)clearSessionAndIdentityStore
 {
-    [OWSPrimaryStorage.sharedManager.newDatabaseConnection
-        readWriteWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
-            [[OWSPrimaryStorage sharedManager] resetSessionStore:transaction];
-            [[OWSIdentityManager sharedManager] clearIdentityState:transaction];
-        }];
+    [LKStorage writeWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
+        [[OWSPrimaryStorage sharedManager] resetSessionStore:transaction];
+        [[OWSIdentityManager sharedManager] clearIdentityState:transaction];
+    }];
 }
 
 + (void)snapshotSessionAndIdentityStore
 {
-    [OWSPrimaryStorage.sharedManager.newDatabaseConnection
-        readWriteWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
-            [[OWSPrimaryStorage sharedManager] snapshotSessionStore:transaction];
-            [[OWSIdentityManager sharedManager] snapshotIdentityState:transaction];
-        }];
+    [LKStorage writeWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
+        [[OWSPrimaryStorage sharedManager] snapshotSessionStore:transaction];
+        [[OWSIdentityManager sharedManager] snapshotIdentityState:transaction];
+    }];
 }
 
 + (void)restoreSessionAndIdentityStore
 {
-    [OWSPrimaryStorage.sharedManager.newDatabaseConnection
-        readWriteWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
-            [[OWSPrimaryStorage sharedManager] restoreSessionStore:transaction];
-            [[OWSIdentityManager sharedManager] restoreIdentityState:transaction];
-        }];
+    [LKStorage writeWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
+        [[OWSPrimaryStorage sharedManager] restoreSessionStore:transaction];
+        [[OWSIdentityManager sharedManager] restoreIdentityState:transaction];
+    }];
 }
 #endif
 

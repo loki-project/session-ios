@@ -596,10 +596,10 @@ typedef void (^DebugLogUploadFailure)(DebugLogUploader *uploader, NSError *error
 
     DispatchMainThreadSafe(^{
         __block TSThread *thread = nil;
-        [OWSPrimaryStorage.dbReadWriteConnection readWriteWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
+        [LKStorage writeWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
             thread = [TSContactThread getOrCreateThreadWithContactId:recipientId transaction:transaction];
         }];
-        [self.dbConnection readWriteWithBlock:^(YapDatabaseReadWriteTransaction *_Nonnull transaction) {
+        [LKStorage writeWithBlock:^(YapDatabaseReadWriteTransaction *_Nonnull transaction) {
             [ThreadUtil enqueueMessageWithText:url.absoluteString
                                       inThread:thread
                               quotedReplyModel:nil
@@ -619,12 +619,12 @@ typedef void (^DebugLogUploadFailure)(DebugLogUploader *uploader, NSError *error
     }
 
     __block TSThread *thread = nil;
-    [OWSPrimaryStorage.dbReadConnection readWithBlock:^(YapDatabaseReadTransaction *transaction) {
+    [LKStorage readWithBlock:^(YapDatabaseReadTransaction *transaction) {
         thread = [[transaction ext:TSThreadDatabaseViewExtensionName] firstObjectInGroup:TSInboxGroup];
     }];
     DispatchMainThreadSafe(^{
         if (thread) {
-            [self.dbConnection readWriteWithBlock:^(YapDatabaseReadWriteTransaction *_Nonnull transaction) {
+            [LKStorage writeWithBlock:^(YapDatabaseReadWriteTransaction *_Nonnull transaction) {
                 [ThreadUtil enqueueMessageWithText:url.absoluteString
                                           inThread:thread
                                   quotedReplyModel:nil

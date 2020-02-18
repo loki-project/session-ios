@@ -166,7 +166,7 @@ final class ConversationTitleView : UIView {
                     if thread.groupModel.groupType == .closedGroup {
                         userCount = GroupUtilities.getClosedGroupMemberCount(thread)
                     } else if thread.groupModel.groupType == .openGroup {
-                        storage.dbReadConnection.readWrite { transaction in
+                        Storage.read { transaction in
                             if let publicChat = LokiDatabaseUtilities.getPublicChat(for: self.thread.uniqueId!, in: transaction) {
                                 userCount = storage.getUserCount(for: publicChat, in: transaction)
                             }

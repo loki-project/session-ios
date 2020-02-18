@@ -278,7 +278,7 @@ ConversationColorName const kConversationColorName_Default = ConversationColorNa
  */
 - (void)enumerateInteractionsUsingBlock:(void (^)(TSInteraction *interaction))block
 {
-    [self.dbReadWriteConnection readWriteWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
+    [LKStorage writeWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
         [self enumerateInteractionsWithTransaction:transaction
                                         usingBlock:^(
                                             TSInteraction *interaction, YapDatabaseReadTransaction *transaction) {
@@ -291,7 +291,7 @@ ConversationColorName const kConversationColorName_Default = ConversationColorNa
 - (TSInteraction *)lastInteraction
 {
     __block TSInteraction *interaction;
-    [self.dbReadConnection readWithBlock:^(YapDatabaseReadTransaction *transaction) {
+    [LKStorage readWithBlock:^(YapDatabaseReadTransaction *transaction) {
         interaction = [self getLastInteractionWithTransaction:transaction];
     }];
     return interaction;
@@ -341,7 +341,7 @@ ConversationColorName const kConversationColorName_Default = ConversationColorNa
 - (NSUInteger)numberOfInteractions
 {
     __block NSUInteger count;
-    [[self dbReadConnection] readWithBlock:^(YapDatabaseReadTransaction *transaction) {
+    [LKStorage readWithBlock:^(YapDatabaseReadTransaction *transaction) {
         YapDatabaseViewTransaction *interactionsByThread = [transaction ext:TSMessageDatabaseViewExtensionName];
         count = [interactionsByThread numberOfItemsInGroup:self.uniqueId];
     }];

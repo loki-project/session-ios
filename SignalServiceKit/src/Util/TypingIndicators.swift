@@ -328,7 +328,7 @@ public class TypingIndicatorsImpl: NSObject, TypingIndicators {
                 return
             } else {
                 var isNoteToSelf = false
-                OWSPrimaryStorage.shared().dbReadConnection.read { transaction in
+                Storage.read { transaction in
                     isNoteToSelf = LokiDatabaseUtilities.isUserLinkedDevice(thread.contactIdentifier()!, transaction: transaction)
                 }
                 if isNoteToSelf { return }

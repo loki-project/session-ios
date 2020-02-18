@@ -1425,7 +1425,7 @@ typedef NS_ENUM(NSInteger, HomeViewControllerSection) {
 
 - (void)deleteThread:(TSThread *)thread
 {
-    [self.editingDbConnection readWriteWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
+    [LKStorage writeWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
         /* Loki: Orignal Code
          =====================
         if ([thread isKindOfClass:[TSGroupThread class]]) {
@@ -1456,7 +1456,7 @@ typedef NS_ENUM(NSInteger, HomeViewControllerSection) {
 
     TSThread *thread = [self threadForIndexPath:indexPath];
 
-    [self.editingDbConnection readWriteWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
+    [LKStorage writeWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
         switch (self.homeViewMode) {
             case HomeViewMode_Inbox:
                 [thread archiveThreadWithTransaction:transaction];

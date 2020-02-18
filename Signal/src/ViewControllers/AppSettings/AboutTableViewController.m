@@ -90,7 +90,7 @@
     __block NSUInteger threadCount;
     __block NSUInteger messageCount;
     __block NSUInteger attachmentCount;
-    [OWSPrimaryStorage.dbReadConnection readWithBlock:^(YapDatabaseReadTransaction *transaction) {
+    [LKStorage readWithBlock:^(YapDatabaseReadTransaction *transaction) {
         threadCount = [transaction numberOfKeysInCollection:[TSThread collection]];
         messageCount = [transaction numberOfKeysInCollection:[TSInteraction collection]];
         attachmentCount = [transaction numberOfKeysInCollection:[TSAttachment collection]];

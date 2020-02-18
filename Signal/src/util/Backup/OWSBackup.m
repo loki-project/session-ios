@@ -736,7 +736,7 @@ NSError *OWSBackupErrorWithDescription(NSString *description)
 - (NSArray<NSString *> *)attachmentRecordNamesForLazyRestore
 {
     NSMutableArray<NSString *> *recordNames = [NSMutableArray new];
-    [self.dbConnection readWithBlock:^(YapDatabaseReadTransaction *transaction) {
+    [LKStorage readWithBlock:^(YapDatabaseReadTransaction *transaction) {
         id ext = [transaction ext:TSLazyRestoreAttachmentsDatabaseViewExtensionName];
         if (!ext) {
             OWSFailDebug(@"Could not load database view.");
@@ -766,7 +766,7 @@ NSError *OWSBackupErrorWithDescription(NSString *description)
 - (NSArray<NSString *> *)attachmentIdsForLazyRestore
 {
     NSMutableArray<NSString *> *attachmentIds = [NSMutableArray new];
-    [self.dbConnection readWithBlock:^(YapDatabaseReadTransaction *transaction) {
+    [LKStorage readWithBlock:^(YapDatabaseReadTransaction *transaction) {
         id ext = [transaction ext:TSLazyRestoreAttachmentsDatabaseViewExtensionName];
         if (!ext) {
             OWSFailDebug(@"Could not load database view.");
@@ -867,7 +867,7 @@ NSError *OWSBackupErrorWithDescription(NSString *description)
         return [AnyPromise promiseWithValue:error];
     }
 
-    [self.dbConnection readWriteWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
+    [LKStorage writeWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
         // This should overwrite the attachment pointer with an attachment stream.
         [stream saveWithTransaction:transaction];
     }];

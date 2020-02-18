@@ -367,7 +367,7 @@ class MediaGallery: NSObject, MediaGalleryDataSource, MediaTileViewControllerDel
     @objc
     public func presentDetailView(fromViewController: UIViewController, mediaAttachment: TSAttachment, replacingView: UIView) {
         var galleryItem: MediaGalleryItem?
-        uiDatabaseConnection.read { transaction in
+        Storage.read { transaction in
             galleryItem = self.buildGalleryItem(attachment: mediaAttachment, transaction: transaction)
         }
 
@@ -507,7 +507,7 @@ class MediaGallery: NSObject, MediaGalleryDataSource, MediaTileViewControllerDel
     @objc
     func pushTileView(fromNavController: OWSNavigationController) {
         var mostRecentItem: MediaGalleryItem?
-        self.uiDatabaseConnection.read { transaction in
+        Storage.read { transaction in
             if let attachment = self.mediaGalleryFinder.mostRecentMediaAttachment(transaction: transaction) {
                 mostRecentItem = self.buildGalleryItem(attachment: attachment, transaction: transaction)
             }

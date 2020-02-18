@@ -48,7 +48,7 @@ NS_ASSUME_NONNULL_BEGIN
 + (void)saveAllAttachments
 {
     OWSPrimaryStorage *primaryStorage = [OWSPrimaryStorage sharedManager];
-    [primaryStorage.newDatabaseConnection readWriteWithBlock:^(YapDatabaseReadWriteTransaction *_Nonnull transaction) {
+    [LKStorage writeWithBlock:^(YapDatabaseReadWriteTransaction *_Nonnull transaction) {
         NSMutableArray<TSAttachmentStream *> *attachmentStreams = [NSMutableArray new];
         [transaction enumerateKeysAndObjectsInCollection:TSAttachmentStream.collection
                                               usingBlock:^(NSString *key, TSAttachment *attachment, BOOL *stop) {
@@ -79,7 +79,7 @@ NS_ASSUME_NONNULL_BEGIN
 + (void)deleteOldMessages:(NSTimeInterval)maxAgeSeconds
 {
     OWSPrimaryStorage *primaryStorage = [OWSPrimaryStorage sharedManager];
-    [primaryStorage.newDatabaseConnection readWriteWithBlock:^(YapDatabaseReadWriteTransaction *_Nonnull transaction) {
+    [LKStorage writeWithBlock:^(YapDatabaseReadWriteTransaction *_Nonnull transaction) {
         NSMutableArray<NSString *> *threadIds = [NSMutableArray new];
         YapDatabaseViewTransaction *interactionsByThread = [transaction ext:TSMessageDatabaseViewExtensionName];
         [interactionsByThread enumerateGroupsUsingBlock:^(NSString *group, BOOL *stop) {

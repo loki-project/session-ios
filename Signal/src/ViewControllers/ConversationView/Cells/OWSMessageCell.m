@@ -298,7 +298,7 @@ NS_ASSUME_NONNULL_BEGIN
     // Loki: Show the moderator icon if needed
     if (self.viewItem.isGroupThread && !self.viewItem.isRSSFeed) {
         __block LKPublicChat *publicChat;
-        [OWSPrimaryStorage.sharedManager.dbReadConnection readWithBlock:^(YapDatabaseReadTransaction *transaction) {
+        [LKStorage readWithBlock:^(YapDatabaseReadTransaction *transaction) {
             publicChat = [LKDatabaseUtilities getPublicChatForThreadID:self.viewItem.interaction.uniqueThreadId transaction: transaction];
         }];
         if (publicChat != nil) {
@@ -539,7 +539,7 @@ NS_ASSUME_NONNULL_BEGIN
             // Only show the first friend request that was received
             NSString *senderID = ((TSIncomingMessage *)message).authorId;
             __block NSMutableSet<TSContactThread *> *linkedDeviceThreads;
-            [OWSPrimaryStorage.sharedManager.dbReadWriteConnection readWriteWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
+            [LKStorage writeWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
                 linkedDeviceThreads = [LKDatabaseUtilities getLinkedDeviceThreadsFor:senderID in:transaction].mutableCopy;
             }];
             NSMutableArray<TSIncomingMessage *> *allFriendRequestMessages = @[].mutableCopy;

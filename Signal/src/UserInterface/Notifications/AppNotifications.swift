@@ -667,7 +667,7 @@ extension ThreadUtil {
 
     class func sendMessageNonDurably(text: String, thread: TSThread, quotedReplyModel: OWSQuotedReplyModel?, messageSender: MessageSender) -> Promise<Void> {
         return Promise { resolver in
-            self.dbReadConnection.read { transaction in
+            Storage.read { transaction in
                 _ = self.sendMessageNonDurably(withText: text,
                                                in: thread,
                                                quotedReplyModel: quotedReplyModel,

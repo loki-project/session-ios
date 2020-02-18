@@ -517,7 +517,7 @@ static const NSUInteger OWSMessageSchemaVersion = 4;
 - (void)generateLinkPreviewIfNeededFromURL:(NSString *)url {
     [OWSLinkPreview tryToBuildPreviewInfoObjcWithPreviewUrl:url]
     .thenOn(dispatch_get_main_queue(), ^(OWSLinkPreviewDraft *linkPreviewDraft) {
-        [self.dbReadWriteConnection readWriteWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
+        [LKStorage writeWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
             OWSLinkPreview *linkPreview = [OWSLinkPreview buildValidatedLinkPreviewFromInfo:linkPreviewDraft transaction:transaction error:nil];
             self.linkPreview = linkPreview;
             [self saveWithTransaction:transaction];
@@ -527,11 +527,11 @@ static const NSUInteger OWSMessageSchemaVersion = 4;
         // If we failed to get a link preview due to an invalid content type error then this could be a direct image link
         if ([OWSLinkPreview isInvalidContentError:error]) {
             __block AnyPromise *promise;
-            [self.dbReadWriteConnection readWriteWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
+            [LKStorage writeWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
                 promise = [OWSLinkPreview getImagePreviewWithURL:url transaction:transaction]
                 .thenOn(dispatch_get_main_queue(), ^(OWSLinkPreview *linkPreview) {
                     // If we managed to get a direct image preview then render it
-                    [self.dbReadWriteConnection readWriteWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
+                    [LKStorage writeWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
                         if (linkPreview.isDirectAttachment) {
                             [self addAttachmentWithID:linkPreview.imageAttachmentId in:transaction];
                             TSAttachmentStream *attachment = [TSAttachmentStream fetchObjectWithUniqueID:linkPreview.imageAttachmentId transaction:transaction];

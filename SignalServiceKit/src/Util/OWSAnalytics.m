@@ -13,6 +13,7 @@
 #import <Reachability/Reachability.h>
 #import <SignalCoreKit/Cryptography.h>
 #import <YapDatabase/YapDatabase.h>
+#import <SignalServiceKit/SignalServiceKit-Swift.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -135,7 +136,7 @@ NSString *NSStringForOWSAnalyticsSeverity(OWSAnalyticsSeverity severity)
 
         __block NSString *firstEventKey = nil;
         __block NSDictionary *firstEventDictionary = nil;
-        [self.dbConnection readWithBlock:^(YapDatabaseReadTransaction *transaction) {
+        [LKStorage readWithBlock:^(YapDatabaseReadTransaction *transaction) {
             // Take any event. We don't need to deliver them in any particular order.
             [transaction enumerateKeysInCollection:kOWSAnalytics_EventsCollection
                                         usingBlock:^(NSString *key, BOOL *_Nonnull stop) {
@@ -187,7 +188,7 @@ NSString *NSStringForOWSAnalyticsSeverity(OWSAnalyticsSeverity severity)
                 dispatch_async(self.serialQueue, ^{
                     self.hasRequestInFlight = NO;
 
-                    [self.dbConnection readWriteWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
+                    [LKStorage writeWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
                         // Remove from queue.
                         [transaction removeObjectForKey:eventKey inCollection:kOWSAnalytics_EventsCollection];
                     }];
@@ -323,7 +324,7 @@ NSString *NSStringForOWSAnalyticsSeverity(OWSAnalyticsSeverity severity)
             [self sendEvent:eventDictionary eventKey:eventKey isCritical:YES];
         } else {
             // Add to queue.
-            [self.dbConnection readWriteWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
+            [LKStorage writeWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
                 const int kMaxQueuedEvents = 5000;
                 if ([transaction numberOfKeysInCollection:kOWSAnalytics_EventsCollection] > kMaxQueuedEvents) {
                     OWSLogError(@"Event queue overflow.");

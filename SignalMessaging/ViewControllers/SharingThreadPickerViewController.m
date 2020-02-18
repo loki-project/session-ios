@@ -294,7 +294,7 @@ typedef void (^SendMessageBlock)(SendCompletionBlock completion);
             // SAE runs as long as it needs.
             // TODO ALBUMS - send album via SAE
 
-            [self.dbReadConnection readWithBlock:^(YapDatabaseReadTransaction *_Nonnull transaction) {
+            [LKStorage readWithBlock:^(YapDatabaseReadTransaction *_Nonnull transaction) {
                 outgoingMessage = [ThreadUtil sendMessageNonDurablyWithText:messageText
                                                            mediaAttachments:attachments
                                                                    inThread:self.thread
@@ -338,7 +338,7 @@ typedef void (^SendMessageBlock)(SendCompletionBlock completion);
         // DURABLE CLEANUP - SAE uses non-durable sending to make sure the app is running long enough to complete
         // the sending operation. Alternatively, we could use a durable send, but do more to make sure the
         // SAE runs as long as it needs.
-        [self.dbReadConnection readWithBlock:^(YapDatabaseReadTransaction *_Nonnull transaction) {
+        [LKStorage readWithBlock:^(YapDatabaseReadTransaction *_Nonnull transaction) {
             outgoingMessage = [ThreadUtil sendMessageNonDurablyWithText:messageText
                                                                inThread:self.thread
                                                        quotedReplyModel:nil

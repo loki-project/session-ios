@@ -1093,7 +1093,7 @@ static NSTimeInterval launchStartedAt;
     [fetchMessagesPromise retainUntilComplete];
     
     __block NSDictionary<NSString *, LKPublicChat *> *publicChats;
-    [OWSPrimaryStorage.sharedManager.dbReadConnection readWithBlock:^(YapDatabaseReadTransaction *transaction) {
+    [LKStorage readWithBlock:^(YapDatabaseReadTransaction *transaction) {
         publicChats = [LKDatabaseUtilities getAllPublicChats:transaction];
     }];
     for (LKPublicChat *publicChat in publicChats) {
@@ -1132,7 +1132,7 @@ static NSTimeInterval launchStartedAt;
     [fetchMessagesPromise retainUntilComplete];
     
     __block NSDictionary<NSString *, LKPublicChat *> *publicChats;
-    [OWSPrimaryStorage.sharedManager.dbReadConnection readWithBlock:^(YapDatabaseReadTransaction *transaction) {
+    [LKStorage readWithBlock:^(YapDatabaseReadTransaction *transaction) {
         publicChats = [LKDatabaseUtilities getAllPublicChats:transaction];
     }];
     for (LKPublicChat *publicChat in publicChats) {
@@ -1260,7 +1260,7 @@ static NSTimeInterval launchStartedAt;
         [fetchMessagesPromise retainUntilComplete];
         
         __block NSDictionary<NSString *, LKPublicChat *> *publicChats;
-        [OWSPrimaryStorage.sharedManager.dbReadConnection readWithBlock:^(YapDatabaseReadTransaction *transaction) {
+        [LKStorage readWithBlock:^(YapDatabaseReadTransaction *transaction) {
             publicChats = [LKDatabaseUtilities getAllPublicChats:transaction];
         }];
         for (LKPublicChat *publicChat in publicChats) {
@@ -1429,10 +1429,9 @@ static NSTimeInterval launchStartedAt;
     if ([self.tsAccountManager isRegistered]) {
         OWSLogInfo(@"localNumber: %@", [self.tsAccountManager localNumber]);
 
-        [self.primaryStorage.newDatabaseConnection
-            readWriteWithBlock:^(YapDatabaseReadWriteTransaction *_Nonnull transaction) {
-                [ExperienceUpgradeFinder.sharedManager markAllAsSeenWithTransaction:transaction];
-            }];
+        [LKStorage writeWithBlock:^(YapDatabaseReadWriteTransaction *_Nonnull transaction) {
+            [ExperienceUpgradeFinder.sharedManager markAllAsSeenWithTransaction:transaction];
+        }];
         // Start running the disappearing messages job in case the newly registered user
         // enables this feature
         [self.disappearingMessagesJob startIfNecessary];
@@ -1603,7 +1602,7 @@ static NSTimeInterval launchStartedAt;
         BOOL isChatSetUp = [NSUserDefaults.standardUserDefaults boolForKey:userDefaultsKey];
         if (!isChatSetUp || !chat.isDeletable) {
             [LKPublicChatManager.shared addChatWithServer:chat.server channel:chat.channel name:chat.displayName];
-            [OWSPrimaryStorage.dbReadWriteConnection readWriteWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
+            [LKStorage writeWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
                 TSGroupThread *thread = [TSGroupThread threadWithGroupId:[LKGroupUtilities getEncodedOpenGroupIDAsData:chat.id] transaction:transaction];
                 if (thread != nil) { [OWSProfileManager.sharedManager addThreadToProfileWhitelist:thread]; }
             }];
@@ -1622,7 +1621,7 @@ static NSTimeInterval launchStartedAt;
         if (!isFeedSetUp || !feed.isDeletable) {
             TSGroupModel *group = [[TSGroupModel alloc] initWithTitle:feed.displayName memberIds:@[ userHexEncodedPublicKey, feed.server ] image:nil groupId:[LKGroupUtilities getEncodedRSSFeedIDAsData:feed.id] groupType:rssFeed adminIds:@[ userHexEncodedPublicKey, feed.server ]];
             __block TSGroupThread *thread;
-            [OWSPrimaryStorage.dbReadWriteConnection readWriteWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
+            [LKStorage writeWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
                 thread = [TSGroupThread getOrCreateThreadWithGroupModel:group transaction:transaction];
             }];
             [OWSProfileManager.sharedManager addThreadToProfileWhitelist:thread];
@@ -1635,7 +1634,7 @@ static NSTimeInterval launchStartedAt;
 {
     // Only create the RSS feed pollers if their threads aren't deleted
     __block TSGroupThread *lokiNewsFeedThread;
-    [OWSPrimaryStorage.dbReadConnection readWithBlock:^(YapDatabaseReadTransaction *transaction) {
+    [LKStorage readWithBlock:^(YapDatabaseReadTransaction *transaction) {
         lokiNewsFeedThread = [TSGroupThread threadWithGroupId:[LKGroupUtilities getEncodedRSSFeedIDAsData:self.lokiNewsFeed.id] transaction:transaction];
     }];
     if (lokiNewsFeedThread != nil && self.lokiNewsFeedPoller == nil) {

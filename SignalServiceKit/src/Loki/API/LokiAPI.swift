@@ -33,8 +33,6 @@ public final class LokiAPI : NSObject {
     private static let maxRetryCount: UInt = 8
     private static let defaultTimeout: TimeInterval = 20
     private static let longPollingTimeout: TimeInterval = 40
-    private static let receivedMessageHashValuesKey = "receivedMessageHashValuesKey"
-    private static let receivedMessageHashValuesCollection = "receivedMessageHashValuesCollection"
     private static var userIDScanLimit: UInt = 4096
     internal static var powDifficulty: UInt = 4
     public static let defaultMessageTTL: UInt64 = 24 * 60 * 60 * 1000
@@ -328,7 +326,10 @@ public final class LokiAPI : NSObject {
             storage.setLastMessageHash(forServiceNode: target.address, hash: hashValue, expiresAt: expirationDate, transaction: transaction)
         }
     }
-
+    
+    private static let receivedMessageHashValuesKey = "receivedMessageHashValuesKey"
+    private static let receivedMessageHashValuesCollection = "receivedMessageHashValuesCollection"
+    
     private static func getReceivedMessageHashValues() -> Set<String>? {
         var result: Set<String>? = nil
         Storage.read { transaction in

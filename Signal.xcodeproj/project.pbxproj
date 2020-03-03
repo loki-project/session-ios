@@ -597,6 +597,14 @@
 		B893063F2383961A005EAA8E /* ScanQRCodeWrapperVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = B893063E2383961A005EAA8E /* ScanQRCodeWrapperVC.swift */; };
 		B894D0712339D6F300B4D94D /* DeviceLinkingModalDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = B894D0702339D6F300B4D94D /* DeviceLinkingModalDelegate.swift */; };
 		B894D0752339EDCF00B4D94D /* NukeDataModal.swift in Sources */ = {isa = PBXBuildFile; fileRef = B894D0742339EDCF00B4D94D /* NukeDataModal.swift */; };
+		B89529C4240E12D60036FF5E /* AudioContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = B89529BE240E12D50036FF5E /* AudioContext.swift */; };
+		B89529C5240E12D60036FF5E /* AudioVisualizationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B89529BF240E12D50036FF5E /* AudioVisualizationView.swift */; };
+		B89529C6240E12D60036FF5E /* AVAudioFileExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = B89529C0240E12D60036FF5E /* AVAudioFileExtensions.swift */; };
+		B89529C7240E12D60036FF5E /* BaseNibView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B89529C1240E12D60036FF5E /* BaseNibView.swift */; };
+		B89529C8240E12D60036FF5E /* AudioVisualizationView.xib in Resources */ = {isa = PBXBuildFile; fileRef = B89529C2240E12D60036FF5E /* AudioVisualizationView.xib */; };
+		B89529C9240E12D60036FF5E /* Chronometer.swift in Sources */ = {isa = PBXBuildFile; fileRef = B89529C3240E12D60036FF5E /* Chronometer.swift */; };
+		B89529CC240E13110036FF5E /* VoiceMessageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B89529CB240E13110036FF5E /* VoiceMessageView.swift */; };
+		B89529CE240E14DB0036FF5E /* file_example_MP3_2MG.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = B89529CD240E14DB0036FF5E /* file_example_MP3_2MG.mp3 */; };
 		B8B26C8F234D629C004ED98C /* MentionCandidateSelectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8B26C8E234D629C004ED98C /* MentionCandidateSelectionView.swift */; };
 		B8B26C91234D8CBD004ED98C /* MentionCandidateSelectionViewDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8B26C90234D8CBD004ED98C /* MentionCandidateSelectionViewDelegate.swift */; };
 		B8B5BCEC2394D869003823C9 /* Button.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8B5BCEB2394D869003823C9 /* Button.swift */; };
@@ -1442,6 +1450,14 @@
 		B893063E2383961A005EAA8E /* ScanQRCodeWrapperVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScanQRCodeWrapperVC.swift; sourceTree = "<group>"; };
 		B894D0702339D6F300B4D94D /* DeviceLinkingModalDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceLinkingModalDelegate.swift; sourceTree = "<group>"; };
 		B894D0742339EDCF00B4D94D /* NukeDataModal.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NukeDataModal.swift; sourceTree = "<group>"; };
+		B89529BE240E12D50036FF5E /* AudioContext.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AudioContext.swift; sourceTree = "<group>"; };
+		B89529BF240E12D50036FF5E /* AudioVisualizationView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AudioVisualizationView.swift; sourceTree = "<group>"; };
+		B89529C0240E12D60036FF5E /* AVAudioFileExtensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AVAudioFileExtensions.swift; sourceTree = "<group>"; };
+		B89529C1240E12D60036FF5E /* BaseNibView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BaseNibView.swift; sourceTree = "<group>"; };
+		B89529C2240E12D60036FF5E /* AudioVisualizationView.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = AudioVisualizationView.xib; sourceTree = "<group>"; };
+		B89529C3240E12D60036FF5E /* Chronometer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Chronometer.swift; sourceTree = "<group>"; };
+		B89529CB240E13110036FF5E /* VoiceMessageView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VoiceMessageView.swift; sourceTree = "<group>"; };
+		B89529CD240E14DB0036FF5E /* file_example_MP3_2MG.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = file_example_MP3_2MG.mp3; sourceTree = "<group>"; };
 		B8B26C8E234D629C004ED98C /* MentionCandidateSelectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MentionCandidateSelectionView.swift; sourceTree = "<group>"; };
 		B8B26C90234D8CBD004ED98C /* MentionCandidateSelectionViewDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MentionCandidateSelectionViewDelegate.swift; sourceTree = "<group>"; };
 		B8B5BCEB2394D869003823C9 /* Button.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Button.swift; sourceTree = "<group>"; };
@@ -2749,6 +2765,27 @@
 			path = "Jazz Icon";
 			sourceTree = "<group>";
 		};
+		B89529BD240E12A80036FF5E /* Dependencies */ = {
+			isa = PBXGroup;
+			children = (
+				B89529CA240E12DE0036FF5E /* SoundWave */,
+			);
+			path = Dependencies;
+			sourceTree = "<group>";
+		};
+		B89529CA240E12DE0036FF5E /* SoundWave */ = {
+			isa = PBXGroup;
+			children = (
+				B89529BE240E12D50036FF5E /* AudioContext.swift */,
+				B89529BF240E12D50036FF5E /* AudioVisualizationView.swift */,
+				B89529C2240E12D60036FF5E /* AudioVisualizationView.xib */,
+				B89529C0240E12D60036FF5E /* AVAudioFileExtensions.swift */,
+				B89529C1240E12D60036FF5E /* BaseNibView.swift */,
+				B89529C3240E12D60036FF5E /* Chronometer.swift */,
+			);
+			path = SoundWave;
+			sourceTree = "<group>";
+		};
 		B8BB82A3238F356800BA5194 /* Style Guide */ = {
 			isa = PBXGroup;
 			children = (
@@ -2796,6 +2833,7 @@
 				2400888D239F30A600305217 /* SessionRestorationView.swift */,
 				B8CCF638239721E20091D419 /* TabBar.swift */,
 				B8BB82B423947F2D00BA5194 /* TextField.swift */,
+				B89529CB240E13110036FF5E /* VoiceMessageView.swift */,
 			);
 			path = Components;
 			sourceTree = "<group>";
@@ -2917,8 +2955,10 @@
 		D221A093169C9E5E00537ABF /* Signal */ = {
 			isa = PBXGroup;
 			children = (
+				B89529BD240E12A80036FF5E /* Dependencies */,
 				34330A581E7875FB00DF2FB9 /* Fonts */,
 				B633C4FD1A1D190B0059AC12 /* Images */,
+				B89529CD240E14DB0036FF5E /* file_example_MP3_2MG.mp3 */,
 				B66DBF4919D5BBC8006EA940 /* Images.xcassets */,
 				B67EBF5C19194AC60084CCFD /* Settings.bundle */,
 				B657DDC91911A40500F45B0C /* Signal.entitlements */,
@@ -3305,6 +3345,7 @@
 			files = (
 				4C63CC00210A620B003AE45C /* SignalTSan.supp in Resources */,
 				4C6F527C20FFE8400097DEEE /* SignalUBSan.supp in Resources */,
+				B89529C8240E12D60036FF5E /* AudioVisualizationView.xib in Resources */,
 				34CF078A203E6B78005C4D61 /* end_call_tone_cept.caf in Resources */,
 				AD83FF3F1A73426500B5C81A /* audio_pause_button_blue.png in Resources */,
 				34330A5A1E7875FB00DF2FB9 /* fontawesome-webfont.ttf in Resources */,
@@ -3346,6 +3387,7 @@
 				45B74A742044AAB600CD42F8 /* aurora-quiet.aifc in Resources */,
 				45B74A852044AAB600CD42F8 /* bamboo.aifc in Resources */,
 				45B74A782044AAB600CD42F8 /* bamboo-quiet.aifc in Resources */,
+				B89529CE240E14DB0036FF5E /* file_example_MP3_2MG.mp3 in Resources */,
 				45B74A7B2044AAB600CD42F8 /* chord.aifc in Resources */,
 				45B74A812044AAB600CD42F8 /* chord-quiet.aifc in Resources */,
 				45B74A832044AAB600CD42F8 /* circles.aifc in Resources */,
@@ -3915,6 +3957,7 @@
 				3496955E219B605E00DCFE74 /* PhotoLibrary.swift in Sources */,
 				B82584A02315024B001B41CB /* LokiRSSFeedPoller.swift in Sources */,
 				24A830A22293CD0100F4CAC0 /* LokiP2PServer.swift in Sources */,
+				B89529CC240E13110036FF5E /* VoiceMessageView.swift in Sources */,
 				349ED990221B0194008045B0 /* Onboarding2FAViewController.swift in Sources */,
 				45D231771DC7E8F10034FA89 /* SessionResetJob.swift in Sources */,
 				340FC8A9204DAC8D007AEB0F /* NotificationSettingsOptionsViewController.m in Sources */,
@@ -3924,6 +3967,7 @@
 				3496957221A301A100DCFE74 /* OWSBackup.m in Sources */,
 				B86BD08623399CEF000F5AE3 /* SeedModal.swift in Sources */,
 				B8BB82A9238F62FB00BA5194 /* Gradients.swift in Sources */,
+				B89529C5240E12D60036FF5E /* AudioVisualizationView.swift in Sources */,
 				34B3F87B1E8DF1700035BE1A /* ExperienceUpgradesPageViewController.swift in Sources */,
 				3448E1622213585C004B052E /* OnboardingBaseViewController.swift in Sources */,
 				34E5DC8220D8050D00C08145 /* RegistrationUtils.m in Sources */,
@@ -3934,6 +3978,7 @@
 				450DF2051E0D74AC003D14BE /* Platform.swift in Sources */,
 				34A4C61E221613D00042EF2E /* OnboardingVerificationViewController.swift in Sources */,
 				4CC613362227A00400E21A3A /* ConversationSearch.swift in Sources */,
+				B89529C9240E12D60036FF5E /* Chronometer.swift in Sources */,
 				340FC8B2204DAC8D007AEB0F /* AdvancedSettingsTableViewController.m in Sources */,
 				452B999020A34B6B006F2F9E /* AddContactShareToExistingContactViewController.swift in Sources */,
 				B82B408C239A068800A248E7 /* RegisterVC.swift in Sources */,
@@ -3952,6 +3997,7 @@
 				34330AA31E79686200DF2FB9 /* OWSProgressView.m in Sources */,
 				344825C6211390C800DB4BD8 /* OWSOrphanDataCleaner.m in Sources */,
 				45D2AC02204885170033C692 /* OWS2FAReminderViewController.swift in Sources */,
+				B89529C4240E12D60036FF5E /* AudioContext.swift in Sources */,
 				4542DF54208D40AC007B4E76 /* LoadingViewController.swift in Sources */,
 				34D5CCA91EAE3D30005515DB /* AvatarViewHelper.m in Sources */,
 				34D1F0B71F87F8850066283D /* OWSGenericAttachmentView.m in Sources */,
@@ -4051,8 +4097,10 @@
 				B8BB82A5238F627000BA5194 /* HomeVC.swift in Sources */,
 				3448E1662215B313004B052E /* OnboardingCaptchaViewController.swift in Sources */,
 				4574A5D61DD6704700C6B692 /* CallService.swift in Sources */,
+				B89529C7240E12D60036FF5E /* BaseNibView.swift in Sources */,
 				4521C3C01F59F3BA00B4C582 /* TextFieldHelper.swift in Sources */,
 				34D2CCDF206939B400CB1A14 /* DebugUIMessagesAction.m in Sources */,
+				B89529C6240E12D60036FF5E /* AVAudioFileExtensions.swift in Sources */,
 				340FC8AC204DAC8D007AEB0F /* PrivacySettingsTableViewController.m in Sources */,
 				B88847BC23E10BC6009836D2 /* GroupMembersVC.swift in Sources */,
 				B85357BF23A1AE0800AAF6CD /* SeedReminderView.swift in Sources */,

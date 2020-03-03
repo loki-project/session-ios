@@ -14,8 +14,8 @@ final class VoiceMessageView : UIView {
     private lazy var playbackButton: UIButton = {
         let result = UIButton()
         result.setImage(#imageLiteral(resourceName: "CirclePlay"), for: UIControl.State.normal)
-        result.set(.width, to: 24)
-        result.set(.height, to: 24)
+        result.set(.width, to: 38)
+        result.set(.height, to: 38)
         return result
     }()
 
@@ -51,9 +51,9 @@ final class VoiceMessageView : UIView {
         playbackButton.center(.horizontal, in: leftView)
         playbackButton.center(.vertical, in: leftView)
         leftView.addSubview(progressView)
-        progressView.pin(to: leftView)
-        leftView.set(.width, to: 36)
-        leftView.set(.height, to: 36)
+        progressView.pin(to: leftView, withInset: 1)
+        leftView.set(.width, to: 40)
+        leftView.set(.height, to: 40)
         let bundle = Bundle.main
         let url = bundle.url(forResource: "file_example_MP3_2MG", withExtension: "mp3")!
         let waveView = AudioVisualizationView()
@@ -66,13 +66,14 @@ final class VoiceMessageView : UIView {
         waveView.meteringLevelBarCornerRadius = 1
         waveView.stop()
         waveView.play(from: url)
-        waveView.set(.height, to: 36)
+        waveView.set(.height, to: 40)
+        timeView.text = OWSFormat.formatDurationSeconds(Int(viewItem.audioDurationSeconds)) //[OWSFormat formatDurationSeconds:(long)round(self.audioDurationSeconds)]
 //        waveformView.audioURL = url
 //        waveformView.wavesColor = Colors.text
-        let stackView = UIStackView(arrangedSubviews: [ leftView, waveView, timeView ])
+        let stackView = UIStackView(arrangedSubviews: [ leftView, UIView.spacer(withWidth: 10), waveView, UIView.spacer(withWidth: 8), timeView ])
         stackView.axis = .horizontal
         stackView.alignment = .center
-        stackView.spacing = Values.mediumSpacing
+        stackView.clipsToBounds = false
         addSubview(stackView)
         stackView.pin(to: self)
     }

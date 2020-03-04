@@ -1,4 +1,4 @@
-//import SoundWave
+import NVActivityIndicatorView
 
 @objc(LKVoiceMessageView)
 final class VoiceMessageView : UIView {
@@ -7,24 +7,78 @@ final class VoiceMessageView : UIView {
     private let style: ConversationStyle
 
     private lazy var isIncoming: Bool = {
-        viewItem.interaction.interactionType() == .incomingMessage
+        return viewItem.interaction.interactionType() == .incomingMessage
     }()
+    
+    private var isDownloading: Bool {
+        guard let attachmentPointer = self.viewItem.attachmentPointer, attachmentPointer.uniqueId != nil else { return false }
+        return attachmentPointer.state == .enqueued || attachmentPointer.state == .downloading
+    }
 
+    // MARK: Settings
+    private static let contentHeight = CGFloat(40)
+    
+    private static func getVerticalMargin(for viewItem: ConversationViewItem) -> CGFloat {
+        return viewItem.shouldHideFooter ? 0 : 4
+    }
+    
+    @objc static func getHeight(for viewItem: ConversationViewItem) -> CGFloat {
+        return contentHeight + 2 * getVerticalMargin(for: viewItem)
+    }
+    
     // MARK: Components
     private lazy var playbackButton: UIButton = {
         let result = UIButton()
         result.setImage(#imageLiteral(resourceName: "CirclePlay"), for: UIControl.State.normal)
-        result.set(.width, to: 38)
-        result.set(.height, to: 38)
         return result
     }()
 
     private lazy var progressView = ProgressView()
 
+    private lazy var leftView: UIView = {
+        let result = UIView()
+        let size = VoiceMessageView.contentHeight
+        result.set(.width, to: size)
+        result.set(.height, to: size)
+        return result
+    }()
+    
+    private lazy var waveformView: AudioVisualizationView = {
+        let result = AudioVisualizationView()
+        result.meteringLevelBarWidth = 2
+        result.meteringLevelBarInterItem = 1
+        result.meteringLevelBarCornerRadius = 1
+        result.meteringLevelBarSingleStick = true
+        result.backgroundColor = .clear
+        result.gradientStartColor = Colors.text
+        result.gradientEndColor = Colors.text
+        result.set(.height, to: VoiceMessageView.contentHeight)
+        return result
+    }()
+    
+    private lazy var spinner: NVActivityIndicatorView = {
+        let result = NVActivityIndicatorView(frame: CGRect.zero, type: .ballPulse, color: Colors.text, padding: nil)
+        result.set(.width, to: 24)
+        result.set(.height, to: 24)
+        return result
+    }()
+    
+    private lazy var waveformViewContainer = UIView()
+    
     private lazy var timeView: UILabel = {
         let result = UILabel()
         result.font = .systemFont(ofSize: Values.smallFontSize)
         result.textColor = Colors.text
+        return result
+    }()
+    
+    private lazy var stackView: UIStackView = {
+        let result = UIStackView(arrangedSubviews: [ leftView, UIView.spacer(withWidth: 10), waveformViewContainer, UIView.spacer(withWidth: 8), timeView ])
+        result.axis = .horizontal
+        result.alignment = .center
+        let verticalMargin = VoiceMessageView.getVerticalMargin(for: viewItem)
+        result.layoutMargins = UIEdgeInsets(top: verticalMargin, left: 0, bottom: verticalMargin, right: 0)
+        result.isLayoutMarginsRelativeArrangement = true
         return result
     }()
 
@@ -46,51 +100,53 @@ final class VoiceMessageView : UIView {
     }
 
     private func setUpViewHierarchy() {
-        let leftView = UIView()
+        let leftViewInset = ProgressView.lineThickness / 2
         leftView.addSubview(playbackButton)
-        playbackButton.center(.horizontal, in: leftView)
-        playbackButton.center(.vertical, in: leftView)
+        playbackButton.pin(to: leftView, withInset: leftViewInset)
         leftView.addSubview(progressView)
-        progressView.pin(to: leftView, withInset: 1)
-        leftView.set(.width, to: 40)
-        leftView.set(.height, to: 40)
-        let bundle = Bundle.main
-        let url = bundle.url(forResource: "file_example_MP3_2MG", withExtension: "mp3")!
-        let waveView = AudioVisualizationView()
-        waveView.meteringLevelBarWidth = 2
-        waveView.meteringLevelBarInterItem = 1
-        waveView.meteringLevelBarSingleStick = true
-        waveView.backgroundColor = .clear
-        waveView.gradientStartColor = .white
-        waveView.gradientEndColor = .white
-        waveView.meteringLevelBarCornerRadius = 1
-        waveView.stop()
-        waveView.play(from: url)
-        waveView.set(.height, to: 40)
-        timeView.text = OWSFormat.formatDurationSeconds(Int(viewItem.audioDurationSeconds)) //[OWSFormat formatDurationSeconds:(long)round(self.audioDurationSeconds)]
-//        waveformView.audioURL = url
-//        waveformView.wavesColor = Colors.text
-        let stackView = UIStackView(arrangedSubviews: [ leftView, UIView.spacer(withWidth: 10), waveView, UIView.spacer(withWidth: 8), timeView ])
-        stackView.axis = .horizontal
-        stackView.alignment = .center
-        stackView.clipsToBounds = false
+        progressView.pin(to: leftView, withInset: leftViewInset)
+        waveformViewContainer.addSubview(waveformView)
+        waveformView.pin(to: waveformViewContainer)
+        waveformViewContainer.addSubview(spinner)
+        spinner.center(in: waveformViewContainer)
+        timeView.text = OWSFormat.formatDurationSeconds(Int(viewItem.audioDurationSeconds))
         addSubview(stackView)
         stackView.pin(to: self)
     }
-
+    
     // MARK: Updating
-//    @objc func update() {
-//        guard viewItem.attachmentPointer?.isDownloaded else { return }
-//        self.voiceMessage.sourceFilename
-//    }
+    @objc func update() {
+        let verticalMargin = VoiceMessageView.getVerticalMargin(for: viewItem)
+        stackView.layoutMargins = UIEdgeInsets(top: verticalMargin, left: 0, bottom: verticalMargin, right: 0)
+        if isDownloading {
+            waveformView.alpha = 0
+            spinner.startAnimating()
+        } else {
+            if waveformView.alpha == 0 {
+                UIView.animate(withDuration: 0.25) {
+                    self.waveformView.alpha = 1
+                }
+            }
+            let url = Bundle.main.url(forResource: "file_example_MP3_2MG", withExtension: "mp3")!
+            waveformView.play(from: url)
+            if spinner.alpha == 1 {
+                UIView.animate(withDuration: 0.25) {
+                    self.spinner.alpha = 0
+                }
+            }
+            spinner.stopAnimating()
+        }
+    }
 }
 
 // MARK: Progress View
-final class ProgressView : UIView {
+private final class ProgressView : UIView {
 
+    static let lineThickness = CGFloat(2)
+    
     private lazy var bottomLineLayer: CAShapeLayer = {
         let result = CAShapeLayer()
-        result.lineWidth = 2
+        result.lineWidth = ProgressView.lineThickness
         result.strokeColor = Colors.separator.cgColor
         result.fillColor = UIColor.clear.cgColor
         return result
@@ -98,7 +154,7 @@ final class ProgressView : UIView {
 
     private lazy var topLineLayer: CAShapeLayer = {
         let result = CAShapeLayer()
-        result.lineWidth = 2
+        result.lineWidth = ProgressView.lineThickness
         result.strokeColor = Colors.accent.cgColor
         result.fillColor = UIColor.clear.cgColor
         return result
@@ -131,270 +187,5 @@ final class ProgressView : UIView {
         let topPath = UIBezierPath(arcCenter: bounds.center, radius: width() / 2, startAngle: .pi, endAngle: .pi + fraction * 2 * .pi, clockwise: true)
         bottomLineLayer.path = bottomPath.cgPath
         topLineLayer.path = topPath.cgPath
-
-//        let path = UIBezierPath()
-//        path.move(to: CGPoint(x: 0, y: h / 2))
-//        let titleLabelFrame = titleLabel.frame.insetBy(dx: -10, dy: -6)
-//        path.addLine(to: CGPoint(x: titleLabelFrame.origin.x, y: h / 2))
-//        let oval = UIBezierPath(roundedRect: titleLabelFrame, cornerRadius: Values.separatorLabelHeight / 2)
-//        path.append(oval)
-//        path.move(to: CGPoint(x: titleLabelFrame.origin.x + titleLabelFrame.width, y: h / 2))
-//        path.addLine(to: CGPoint(x: w, y: h / 2))
-//        path.close()
-//        lineLayer.path = path.cgPath
     }
 }
-
-//
-//- (void)updateContents
-//{
-//    [self updateAudioProgressView];
-//    [self updateAudioBottomLabel];
-//
-//    if (self.audioPlaybackState == AudioPlaybackState_Playing) {
-//        [self setAudioIconToPause];
-//    } else {
-//        [self setAudioIconToPlay];
-//    }
-//}
-//
-//- (CGFloat)audioProgressSeconds
-//{
-//    return [self.viewItem audioProgressSeconds];
-//}
-//
-//- (CGFloat)audioDurationSeconds
-//{
-//    return self.viewItem.audioDurationSeconds;
-//}
-//
-//- (AudioPlaybackState)audioPlaybackState
-//{
-//    return [self.viewItem audioPlaybackState];
-//}
-//
-//- (BOOL)isAudioPlaying
-//{
-//    return self.audioPlaybackState == AudioPlaybackState_Playing;
-//}
-//
-//- (void)updateAudioBottomLabel
-//{
-//    if (self.isAudioPlaying && self.audioProgressSeconds > 0 && self.audioDurationSeconds > 0) {
-//        self.audioBottomLabel.text =
-//            [NSString stringWithFormat:@"%@ / %@",
-//                      [OWSFormat formatDurationSeconds:(long)round(self.audioProgressSeconds)],
-//                      [OWSFormat formatDurationSeconds:(long)round(self.audioDurationSeconds)]];
-//    } else {
-//        self.audioBottomLabel.text =
-//            [NSString stringWithFormat:@"%@", [OWSFormat formatDurationSeconds:(long)round(self.audioDurationSeconds)]];
-//    }
-//}
-//
-//- (void)setAudioIcon:(UIImage *)icon
-//{
-//    icon = [icon resizedImageToSize:CGSizeMake(self.iconSize, self.iconSize)];
-//    [_audioPlayPauseButton setImage:icon forState:UIControlStateNormal];
-//    [_audioPlayPauseButton setImage:icon forState:UIControlStateDisabled];
-//}
-//
-//- (void)setAudioIconToPlay
-//{
-//    [self setAudioIcon:[UIImage imageNamed:@"CirclePlay"]];
-//}
-//
-//- (void)setAudioIconToPause
-//{
-//    [self setAudioIcon:[UIImage imageNamed:@"CirclePause"]];
-//}
-//
-//- (void)updateAudioProgressView
-//{
-//    [self.audioProgressView
-//        setProgress:(self.audioDurationSeconds > 0 ? self.audioProgressSeconds / self.audioDurationSeconds : 0.f)];
-//
-//    UIColor *progressColor = [self.conversationStyle bubbleSecondaryTextColorWithIsIncoming:self.isIncoming];
-//    self.audioProgressView.horizontalBarColor = progressColor;
-//    self.audioProgressView.progressColor = progressColor;
-//}
-//
-//- (void)replaceIconWithDownloadProgressIfNecessary:(UIView *)iconView
-//{
-//    if (!self.viewItem.attachmentPointer) {
-//        return;
-//    }
-//
-//    switch (self.viewItem.attachmentPointer.state) {
-//        case TSAttachmentPointerStateFailed:
-//            // We don't need to handle the "tap to retry" state here,
-//            // only download progress.
-//            return;
-//        case TSAttachmentPointerStateEnqueued:
-//        case TSAttachmentPointerStateDownloading:
-//            break;
-//    }
-//    switch (self.viewItem.attachmentPointer.pointerType) {
-//        case TSAttachmentPointerTypeRestoring:
-//            // TODO: Show "restoring" indicator and possibly progress.
-//            return;
-//        case TSAttachmentPointerTypeUnknown:
-//        case TSAttachmentPointerTypeIncoming:
-//            break;
-//    }
-//    NSString *_Nullable uniqueId = self.viewItem.attachmentPointer.uniqueId;
-//    if (uniqueId.length < 1) {
-//        OWSFailDebug(@"Missing uniqueId.");
-//        return;
-//    }
-//
-//    CGFloat downloadViewSize = self.iconSize;
-//    MediaDownloadView *downloadView =
-//        [[MediaDownloadView alloc] initWithAttachmentId:uniqueId radius:downloadViewSize * 0.5f];
-//    iconView.layer.opacity = 0.01f;
-//    [self addSubview:downloadView];
-//    [downloadView autoSetDimensionsToSize:CGSizeMake(downloadViewSize, downloadViewSize)];
-//    [downloadView autoAlignAxis:ALAxisHorizontal toSameAxisOfView:iconView];
-//    [downloadView autoAlignAxis:ALAxisVertical toSameAxisOfView:iconView];
-//}
-//
-//#pragma mark -
-//
-//- (CGFloat)hMargin
-//{
-//    return 0.f;
-//}
-//
-//- (CGFloat)hSpacing
-//{
-//    return 8.f;
-//}
-//
-//+ (CGFloat)vMargin
-//{
-//    return 0.f;
-//}
-//
-//- (CGFloat)vMargin
-//{
-//    return [OWSAudioMessageView vMargin];
-//}
-//
-//+ (CGFloat)bubbleHeight
-//{
-//    CGFloat iconHeight = self.iconSize;
-//    CGFloat labelsHeight = ([OWSAudioMessageView labelFont].lineHeight * 2 +
-//        [OWSAudioMessageView audioProgressViewHeight] + [OWSAudioMessageView labelVSpacing] * 2);
-//    CGFloat contentHeight = MAX(iconHeight, labelsHeight);
-//    return contentHeight + self.vMargin * 2;
-//}
-//
-//- (CGFloat)bubbleHeight
-//{
-//    return [OWSAudioMessageView bubbleHeight];
-//}
-//
-//+ (CGFloat)iconSize
-//{
-//    return 72.f;
-//}
-//
-//- (CGFloat)iconSize
-//{
-//    return [OWSAudioMessageView iconSize];
-//}
-//
-//- (BOOL)isVoiceMessage
-//{
-//    return self.attachment.isVoiceMessage;
-//}
-//
-//- (void)createContents
-//{
-//    self.axis = UILayoutConstraintAxisHorizontal;
-//    self.alignment = UIStackViewAlignmentCenter;
-//    self.spacing = self.hSpacing;
-//    self.layoutMarginsRelativeArrangement = YES;
-//    self.layoutMargins = UIEdgeInsetsMake(self.vMargin, 0, self.vMargin, 0);
-//
-//    _audioPlayPauseButton = [UIButton buttonWithType:UIButtonTypeCustom];
-//    self.audioPlayPauseButton.enabled = NO;
-//    [self addArrangedSubview:self.audioPlayPauseButton];
-//    self.audioPlayPauseButton.imageView.contentMode = UIViewContentModeCenter;
-//    [self.audioPlayPauseButton autoSetDimension:ALDimensionWidth toSize:56.f];
-//    [self.audioPlayPauseButton autoSetDimension:ALDimensionHeight toSize:56.f];
-//    self.audioPlayPauseButton.imageView.clipsToBounds = NO;
-//    self.audioPlayPauseButton.clipsToBounds = NO;
-//    self.clipsToBounds = NO;
-//
-//    [self replaceIconWithDownloadProgressIfNecessary:self.audioPlayPauseButton];
-//
-//    NSString *_Nullable filename = self.attachment.sourceFilename;
-//    if (filename.length < 1) {
-//        filename = [self.attachmentStream.originalFilePath lastPathComponent];
-//    }
-//    NSString *topText = [[filename stringByDeletingPathExtension] ows_stripped];
-//    if (topText.length < 1) {
-//        topText = [MIMETypeUtil fileExtensionForMIMEType:self.attachment.contentType].localizedUppercaseString;
-//    }
-//    if (topText.length < 1) {
-//        topText = NSLocalizedString(@"GENERIC_ATTACHMENT_LABEL", @"A label for generic attachments.");
-//    }
-//    if (self.isVoiceMessage) {
-//        topText = nil;
-//    }
-//    UILabel *topLabel = [UILabel new];
-//    topLabel.text = topText;
-//    topLabel.textColor = [self.conversationStyle bubbleTextColorWithIsIncoming:self.isIncoming];
-//    topLabel.lineBreakMode = NSLineBreakByTruncatingMiddle;
-//    topLabel.font = [OWSAudioMessageView labelFont];
-//
-//    AudioProgressView *audioProgressView = [AudioProgressView new];
-//    self.audioProgressView = audioProgressView;
-//    [self updateAudioProgressView];
-//    [audioProgressView autoSetDimension:ALDimensionHeight toSize:[OWSAudioMessageView audioProgressViewHeight]];
-//
-//    UILabel *bottomLabel = [UILabel new];
-//    self.audioBottomLabel = bottomLabel;
-//    [self updateAudioBottomLabel];
-//    bottomLabel.textColor = [self.conversationStyle bubbleSecondaryTextColorWithIsIncoming:self.isIncoming];
-//    bottomLabel.lineBreakMode = NSLineBreakByTruncatingMiddle;
-//    bottomLabel.font = [OWSAudioMessageView labelFont];
-//
-//    UIStackView *labelsView = [UIStackView new];
-//    labelsView.axis = UILayoutConstraintAxisVertical;
-//    labelsView.spacing = [OWSAudioMessageView labelVSpacing];
-//    [labelsView addArrangedSubview:topLabel];
-//    [labelsView addArrangedSubview:audioProgressView];
-//    [labelsView addArrangedSubview:bottomLabel];
-//
-//    // Ensure the "audio progress" and "play button" are v-center-aligned using a container.
-//    UIView *labelsContainerView = [UIView containerView];
-//    [self addArrangedSubview:labelsContainerView];
-//    [labelsContainerView addSubview:labelsView];
-//    [labelsView autoPinWidthToSuperview];
-//    [labelsView autoPinEdgeToSuperviewMargin:ALEdgeTop relation:NSLayoutRelationGreaterThanOrEqual];
-//    [labelsView autoPinEdgeToSuperviewMargin:ALEdgeBottom relation:NSLayoutRelationGreaterThanOrEqual];
-//
-//    [audioProgressView autoAlignAxis:ALAxisHorizontal toSameAxisOfView:self.audioPlayPauseButton];
-//
-//    [self updateContents];
-//}
-//
-//+ (CGFloat)audioProgressViewHeight
-//{
-//    return 12.f;
-//}
-//
-//+ (UIFont *)labelFont
-//{
-//    return [UIFont ows_dynamicTypeCaption2Font];
-//}
-//
-//+ (CGFloat)labelVSpacing
-//{
-//    return 2.f;
-//}
-//
-//@end
-//
-//NS_ASSUME_NONNULL_END

@@ -134,10 +134,11 @@ final class VoiceMessageView : UIView {
                     self.waveformView.alpha = 1
                 }
             }
-            let url = Bundle.main.url(forResource: "file_example_MP3_2MG", withExtension: "mp3")!
-            AudioContext.load(fromAudioURL: url) { [weak self] audioContext in
-                guard let audioContext = audioContext else { return }
-                self?.waveformView.meteringLevels = audioContext.render(targetSamples: 100)
+            if let url = viewItem.attachmentStream?.originalMediaURL {
+                AudioContext.load(fromAudioURL: url) { [weak self] audioContext in
+                    guard let audioContext = audioContext else { return }
+                    self?.waveformView.meteringLevels = audioContext.render(targetSamples: 100)
+                }
             }
             if spinner.alpha == 1 {
                 UIView.animate(withDuration: 0.25) {
@@ -158,7 +159,7 @@ private final class ProgressView : UIView {
     private lazy var bottomLineLayer: CAShapeLayer = {
         let result = CAShapeLayer()
         result.lineWidth = ProgressView.lineThickness
-        result.strokeColor = Colors.separator.cgColor
+        result.strokeColor = Colors.voiceMessageProgressBackground.cgColor
         result.fillColor = UIColor.clear.cgColor
         return result
     }()

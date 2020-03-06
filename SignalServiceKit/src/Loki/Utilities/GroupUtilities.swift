@@ -3,7 +3,7 @@ public enum GroupUtilities {
 
     public static func getClosedGroupMembers(_ closedGroup: TSGroupThread) -> [String] {
         var result: [String]!
-        OWSPrimaryStorage.shared().dbReadConnection.read { transaction in
+        Storage.read { transaction in
             result = getClosedGroupMembers(closedGroup, with: transaction)
         }
         return result

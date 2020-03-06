@@ -26,7 +26,7 @@ public final class UserDisplayNameUtilities : NSObject {
     // MARK: Open Groups
     @objc public static func getPublicChatDisplayName(for hexEncodedPublicKey: String, in channel: UInt64, on server: String) -> String? {
         var result: String?
-        OWSPrimaryStorage.shared().dbReadConnection.read { transaction in
+        Storage.read { transaction in
             result = getPublicChatDisplayName(for: hexEncodedPublicKey, in: channel, on: server, using: transaction)
         }
         return result

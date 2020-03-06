@@ -122,7 +122,7 @@ public final class LokiAPI : NSObject {
     
     public static func getDestinations(for hexEncodedPublicKey: String) -> Promise<[Destination]> {
         var result: Promise<[Destination]>!
-        storage.dbReadConnection.readWrite { transaction in
+        Storage.write { transaction in
             result = getDestinations(for: hexEncodedPublicKey, in: transaction)
         }
         return result
@@ -145,7 +145,7 @@ public final class LokiAPI : NSObject {
             if let transaction = transaction, transaction.connection.pendingTransactionCount != 0 {
                 getDestinationsInternal(in: transaction)
             } else {
-                storage.dbReadConnection.read { transaction in
+                Storage.read { transaction in
                     getDestinationsInternal(in: transaction)
                 }
             }
@@ -316,14 +316,14 @@ public final class LokiAPI : NSObject {
         var result: String? = nil
         // Uses a read/write connection because getting the last message hash value also removes expired messages as needed
         // TODO: This shouldn't be the case; a getter shouldn't have an unexpected side effect
-        storage.dbReadWriteConnection.readWrite { transaction in
+        Storage.write { transaction in
             result = storage.getLastMessageHash(forServiceNode: target.address, transaction: transaction)
         }
         return result
     }
 
     private static func setLastMessageHashValue(for target: LokiAPITarget, hashValue: String, expirationDate: UInt64) {
-        storage.dbReadWriteConnection.readWrite { transaction in
+        Storage.write { transaction in
             storage.setLastMessageHash(forServiceNode: target.address, hash: hashValue, expiresAt: expirationDate, transaction: transaction)
         }
     }
@@ -333,14 +333,14 @@ public final class LokiAPI : NSObject {
     
     private static func getReceivedMessageHashValues() -> Set<String>? {
         var result: Set<String>? = nil
-        storage.dbReadConnection.read { transaction in
+        Storage.read { transaction in
             result = transaction.object(forKey: receivedMessageHashValuesKey, inCollection: receivedMessageHashValuesCollection) as! Set<String>?
         }
         return result
     }
 
     private static func setReceivedMessageHashValues(to receivedMessageHashValues: Set<String>) {
-        storage.dbReadWriteConnection.readWrite { transaction in
+        Storage.write { transaction in
             transaction.setObject(receivedMessageHashValues, forKey: receivedMessageHashValuesKey, inCollection: receivedMessageHashValuesCollection)
         }
     }
@@ -360,10 +360,10 @@ public final class LokiAPI : NSObject {
         var candidates: [Mention] = []
         // Gather candidates
         var publicChat: LokiPublicChat?
-        storage.dbReadConnection.read { transaction in
+        Storage.read { transaction in
             publicChat = LokiDatabaseUtilities.getPublicChat(for: threadID, in: transaction)
         }
-        storage.dbReadConnection.read { transaction in
+        Storage.read { transaction in
             candidates = cache.flatMap { hexEncodedPublicKey in
                 let uncheckedDisplayName: String?
                 if let publicChat = publicChat {
@@ -405,7 +405,7 @@ public final class LokiAPI : NSObject {
         if let transaction = transaction {
             populate(in: transaction)
         } else {
-            storage.dbReadWriteConnection.readWrite { transaction in
+            Storage.write { transaction in
                 populate(in: transaction)
             }
         }

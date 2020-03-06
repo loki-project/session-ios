@@ -112,7 +112,7 @@ public final class LokiFileServerAPI : LokiDotNetAPI {
     /// Adds the given device link to the user's device mapping on the server.
     public static func addDeviceLink(_ deviceLink: DeviceLink) -> Promise<Void> {
         var deviceLinks: Set<DeviceLink> = []
-        storage.dbReadConnection.read { transaction in
+        Storage.read { transaction in
             deviceLinks = storage.getDeviceLinks(for: userHexEncodedPublicKey, in: transaction)
         }
         deviceLinks.insert(deviceLink)
@@ -126,7 +126,7 @@ public final class LokiFileServerAPI : LokiDotNetAPI {
     /// Removes the given device link from the user's device mapping on the server.
     public static func removeDeviceLink(_ deviceLink: DeviceLink) -> Promise<Void> {
         var deviceLinks: Set<DeviceLink> = []
-        storage.dbReadConnection.read { transaction in
+        Storage.read { transaction in
             deviceLinks = storage.getDeviceLinks(for: userHexEncodedPublicKey, in: transaction)
         }
         deviceLinks.remove(deviceLink)

@@ -35,7 +35,7 @@ public class LokiDotNetAPI : NSObject {
             return getAuthTokenInternal(in: transaction)
         } else {
             var result: String? = nil
-            storage.dbReadConnection.read { transaction in
+            Storage.read { transaction in
                 result = getAuthTokenInternal(in: transaction)
             }
             return result
@@ -60,7 +60,7 @@ public class LokiDotNetAPI : NSObject {
         if let transaction = transaction, transaction.connection.pendingTransactionCount != 0 {
             setAuthTokenInternal(in: transaction)
         } else {
-            storage.dbReadWriteConnection.readWrite { transaction in
+            Storage.write { transaction in
                 setAuthTokenInternal(in: transaction)
             }
         }

@@ -1,5 +1,5 @@
 
-final class RestoreVC : UIViewController {
+final class RestoreVC : BaseVC {
     private var spacer1HeightConstraint: NSLayoutConstraint!
     private var spacer2HeightConstraint: NSLayoutConstraint!
     private var spacer3HeightConstraint: NSLayoutConstraint!
@@ -29,11 +29,9 @@ final class RestoreVC : UIViewController {
         return result
     }()
     
-    // MARK: Settings
-    override var preferredStatusBarStyle: UIStatusBarStyle { return .lightContent }
-    
     // MARK: Lifecycle
     override func viewDidLoad() {
+        super.viewDidLoad()
         // Set gradient background
         view.backgroundColor = .clear
         let gradient = Gradients.defaultLokiBackground
@@ -202,7 +200,7 @@ final class RestoreVC : UIViewController {
         } else if eulaRange.contains(characterIndex) {
             urlAsString = "https://getsession.org/legal/#eula"
         } else if ppRange.contains(characterIndex) {
-            urlAsString = "https://getsession.org/privacy-policy/"
+            urlAsString = "https://getsession.org/legal/#privacy-policy"
         } else {
             urlAsString = nil
         }

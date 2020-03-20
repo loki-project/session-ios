@@ -122,7 +122,7 @@ public final class LokiAPI : NSObject {
     
     public static func getDestinations(for hexEncodedPublicKey: String) -> Promise<[Destination]> {
         var result: Promise<[Destination]>!
-        storage.dbReadConnection.readWrite { transaction in
+        storage.dbReadWriteConnection.readWrite { transaction in
             result = getDestinations(for: hexEncodedPublicKey, in: transaction)
         }
         return result
@@ -167,6 +167,7 @@ public final class LokiAPI : NSObject {
                     lastDeviceLinkUpdate[hexEncodedPublicKey] = Date()
                     getDestinations()
                 } else {
+                    print("[Loki] Failed to get device links due to error: \(error).")
                     seal.reject(error)
                 }
             }

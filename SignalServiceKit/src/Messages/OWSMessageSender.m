@@ -48,6 +48,7 @@
 #import "LKSessionRequestMessage.h"
 #import "LKSessionRestoreMessage.h"
 #import "LKDeviceLinkMessage.h"
+#import "LKUnlinkDeviceMessage.h"
 #import "LKAddressMessage.h"
 #import <AxolotlKit/AxolotlExceptions.h>
 #import <AxolotlKit/CipherMessage.h>
@@ -354,7 +355,11 @@ NSString *const OWSMessageSenderRateLimitedException = @"RateLimitedException";
     if (message.body.length > 0) {
         OWSAssertDebug([message.body lengthOfBytesUsingEncoding:NSUTF8StringEncoding] <= kOversizeTextMessageSizeThreshold);
     }
-
+    
+    if (!message.thread.isGroupThread) {
+        [NSNotificationCenter.defaultCenter postNotificationName:NSNotification.calculatingPoW object:[[NSNumber alloc] initWithUnsignedLongLong:message.timestamp]]; // Not really true but better from a UI point of view
+    }
+    
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         NSMutableArray<NSString *> *allAttachmentIds = [NSMutableArray new];
 

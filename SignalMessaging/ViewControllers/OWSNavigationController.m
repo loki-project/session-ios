@@ -164,12 +164,7 @@ NS_ASSUME_NONNULL_BEGIN
         // Status bar is overlaying the green "call banner"
         return UIStatusBarStyleLightContent;
     } else {
-        UIViewController *presentedViewController = self.presentedViewController;
-        if (presentedViewController) {
-            return presentedViewController.preferredStatusBarStyle;
-        } else {
-            return (Theme.isDarkThemeEnabled ? UIStatusBarStyleLightContent : super.preferredStatusBarStyle);
-        }
+        return LKAppModeUtilities.isLightMode ? UIStatusBarStyleDefault : UIStatusBarStyleLightContent;
     }
 }
 
@@ -205,21 +200,14 @@ NS_ASSUME_NONNULL_BEGIN
 
 #pragma mark - Orientation
 
+- (BOOL)shouldAutorotate
+{
+    return NO;
+}
+
 - (UIInterfaceOrientationMask)supportedInterfaceOrientations
 {
-    if (self.visibleViewController) {
-        if (@available(iOS 10, *)) {
-            // do nothing
-        } else {
-            // Avoid crash in SAE on iOS9
-            if (!CurrentAppContext().isMainApp) {
-                return UIInterfaceOrientationMaskAllButUpsideDown;
-            }
-        }
-        return self.visibleViewController.supportedInterfaceOrientations;
-    } else {
-        return UIInterfaceOrientationMaskAllButUpsideDown;
-    }
+    return UIInterfaceOrientationMaskPortrait;
 }
 
 @end

@@ -53,12 +53,11 @@ public final class MultiDeviceProtocol : NSObject {
         }
         let isSilentMessage = message.isSilent || message is EphemeralMessage || message is OWSOutgoingSyncMessage
         let isFriendRequestMessage = message is FriendRequestMessage
-        let isSessionRequestMessage = message is LKSessionRequestMessage
         getMultiDeviceDestinations(for: recipientID, in: transaction).done(on: OWSDispatch.sendingQueue()) { destinations in
             // Send to master destination
             if let masterDestination = destinations.first(where: { $0.kind == .master }) {
                 let thread = TSContactThread.getOrCreateThread(contactId: masterDestination.hexEncodedPublicKey) // TODO: I guess it's okay this starts a new transaction?
-                if thread.isContactFriend || isSilentMessage || isFriendRequestMessage || isSessionRequestMessage || isGroupMessage {
+                if thread.isContactFriend || isSilentMessage || isFriendRequestMessage || isGroupMessage {
                     let messageSendCopy = messageSend.copy(with: masterDestination)
                     messageSender.sendMessage(messageSendCopy)
                 } else {
@@ -73,7 +72,7 @@ public final class MultiDeviceProtocol : NSObject {
             let slaveDestinations = destinations.filter { $0.kind == .slave }
             for slaveDestination in slaveDestinations {
                 let thread = TSContactThread.getOrCreateThread(contactId: slaveDestination.hexEncodedPublicKey) // TODO: I guess it's okay this starts a new transaction?
-                if thread.isContactFriend || isSilentMessage || isFriendRequestMessage || isSessionRequestMessage || isGroupMessage {
+                if thread.isContactFriend || isSilentMessage || isFriendRequestMessage || isGroupMessage {
                     let messageSendCopy = messageSend.copy(with: slaveDestination)
                     messageSender.sendMessage(messageSendCopy)
                 } else {

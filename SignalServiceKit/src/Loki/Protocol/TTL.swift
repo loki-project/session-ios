@@ -12,9 +12,7 @@ public final class TTLUtilities : NSObject {
         case friendRequest
         case linkDevice
         case regular
-        case sessionRequest
         case typingIndicator
-        case unlinkDevice
     }
 
     @objc public static func getTTL(for messageType: MessageType) -> UInt64 {
@@ -23,10 +21,8 @@ public final class TTLUtilities : NSObject {
         case .ephemeral: return 4 * kDayInMs - 1 * kHourInMs
         case .friendRequest: return 4 * kDayInMs
         case .linkDevice: return 4 * kMinuteInMs
-        case .sessionRequest: return 4 * kDayInMs - 1 * kHourInMs
         case .regular: return 2 * kDayInMs
         case .typingIndicator: return 1 * kMinuteInMs
-        case .unlinkDevice: return 4 * kDayInMs
         }
     }
 }

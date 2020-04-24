@@ -20,7 +20,6 @@
 #import "OWSDisappearingMessagesConfiguration.h"
 #import "OWSDisappearingMessagesJob.h"
 #import "LKEphemeralMessage.h"
-#import "LKSessionRequestMessage.h"
 #import "LKDeviceLinkMessage.h"
 #import "OWSIdentityManager.h"
 #import "OWSIncomingMessageFinder.h"

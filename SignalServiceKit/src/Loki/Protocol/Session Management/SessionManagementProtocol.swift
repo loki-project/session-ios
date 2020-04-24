@@ -68,7 +68,8 @@ public final class SessionManagementProtocol : NSObject {
     @objc(isSessionRequiredForMessage:)
     public static func isSessionRequired(for message: TSOutgoingMessage) -> Bool {
         if message is FriendRequestMessage { return false }
-        else if message is LKSessionRequestMessage { return false }
+        else if let ephemeralMessage = message as? EphemeralMessage,
+            ephemeralMessage.flag == UInt(SSKProtoDataMessage.SSKProtoDataMessageFlags.sessionRequest.rawValue) { return false }
         else if let message = message as? DeviceLinkMessage, message.kind == .request { return false }
         return true
     }
@@ -98,9 +99,9 @@ public final class SessionManagementProtocol : NSObject {
     }
 
     @objc(getSessionResetMessageForHexEncodedPublicKey:in:)
-    public static func getSessionResetMessage(for hexEncodedPublicKey: String, in transaction: YapDatabaseReadWriteTransaction) -> SessionRestoreMessage {
+    public static func getSessionResetMessage(for hexEncodedPublicKey: String, in transaction: YapDatabaseReadWriteTransaction) -> EphemeralMessage {
         let thread = TSContactThread.getOrCreateThread(withContactId: hexEncodedPublicKey, transaction: transaction)
-        let result = SessionRestoreMessage(thread: thread)!
+        let result = EphemeralMessage(in: thread, flag: UInt(SSKProtoDataMessage.SSKProtoDataMessageFlags.sessionRestore.rawValue))
         result.skipSave = true // TODO: Why is this necessary again?
         return result
     }

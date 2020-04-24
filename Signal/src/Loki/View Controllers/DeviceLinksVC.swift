@@ -156,7 +156,7 @@ final class DeviceLinksVC : BaseVC, UITableViewDataSource, UITableViewDelegate, 
         LokiFileServerAPI.removeDeviceLink(deviceLink).done { [weak self] in
             let linkedDeviceHexEncodedPublicKey = deviceLink.other.hexEncodedPublicKey
             guard let thread = TSContactThread.fetch(uniqueId: TSContactThread.threadId(fromContactId: linkedDeviceHexEncodedPublicKey)) else { return }
-            let unlinkDeviceMessage = UnlinkDeviceMessage(thread: thread)!
+            let unlinkDeviceMessage = EphemeralMessage(in: thread, flag: UInt(SSKProtoDataMessage.SSKProtoDataMessageFlags.unlinkDevice.rawValue))
             SSKEnvironment.shared.messageSender.send(unlinkDeviceMessage, success: {
                 let storage = OWSPrimaryStorage.shared()
                 storage.dbReadWriteConnection.readWrite { transaction in

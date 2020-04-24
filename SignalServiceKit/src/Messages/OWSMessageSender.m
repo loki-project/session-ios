@@ -45,10 +45,7 @@
 #import "TSThread.h"
 #import "TSContactThread.h"
 #import "LKFriendRequestMessage.h"
-#import "LKSessionRequestMessage.h"
-#import "LKSessionRestoreMessage.h"
 #import "LKDeviceLinkMessage.h"
-#import "LKUnlinkDeviceMessage.h"
 #import "LKAddressMessage.h"
 #import <AxolotlKit/AxolotlExceptions.h>
 #import <AxolotlKit/CipherMessage.h>

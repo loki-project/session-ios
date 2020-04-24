@@ -17,7 +17,7 @@
         OWSFailDebug(@"Failed to build pre key bundle message for: %@ due to error: %@.", recipient.recipientId, error);
         return nil;
     } else {
-         [contentBuilder setPrekeyBundleMessage:preKeyBundleMessage];
+        [contentBuilder setPrekeyBundleMessage:preKeyBundleMessage];
     }
     return contentBuilder;
 }

@@ -19,24 +19,24 @@ NS_ASSUME_NONNULL_BEGIN
 - (nullable SSKProtoSyncMessageBuilder *)syncMessageBuilder
 {
     NSError *error;
-    NSMutableArray<SSKProtoSyncMessageOpenGroups *> *openGroups = @[].mutableCopy;
-    __block NSDictionary<NSString *, LKPublicChat *> *publicChats;
+    NSMutableArray<SSKProtoSyncMessageOpenGroups *> *openGroupMessageProtos = @[].mutableCopy;
+    __block NSDictionary<NSString *, LKPublicChat *> *openGroups;
     [OWSPrimaryStorage.sharedManager.dbReadConnection readWithBlock:^(YapDatabaseReadTransaction *transaction) {
-        publicChats = [LKDatabaseUtilities getAllPublicChats:transaction];
+        openGroups = [LKDatabaseUtilities getAllPublicChats:transaction];
     }];
-    for (LKPublicChat *openGroup in publicChats.allValues) {
+    for (LKPublicChat *openGroup in openGroups.allValues) {
         SSKProtoSyncMessageOpenGroupsBuilder *openGroupMessageBuilder = [SSKProtoSyncMessageOpenGroups builder];
         [openGroupMessageBuilder setUrl:openGroup.server];
         [openGroupMessageBuilder setChannel:openGroup.channel];
         SSKProtoSyncMessageOpenGroups *_Nullable openGroupMessageProto = [openGroupMessageBuilder buildAndReturnError:&error];
         if (error || !openGroupMessageProto) {
-            OWSFailDebug(@"Couldn't build protobuf due to error: %@", error);
+            OWSFailDebug(@"Couldn't build protobuf due to error: %@.", error);
             return nil;
         }
-        [openGroups addObject:openGroupMessageProto];
+        [openGroupMessageProtos addObject:openGroupMessageProto];
     }
     SSKProtoSyncMessageBuilder *syncMessageBuilder = [SSKProtoSyncMessage builder];
-    [syncMessageBuilder setOpenGroups:openGroups];
+    [syncMessageBuilder setOpenGroups:openGroupMessageProtos];
     return syncMessageBuilder;
 }
 

@@ -22,8 +22,21 @@
     return contentBuilder;
 }
 
+#pragma mark Building
+- (nullable SSKProtoDataMessageBuilder *)dataMessageBuilder
+{
+    SSKProtoDataMessageBuilder *builder = super.dataMessageBuilder;
+    if (builder == nil) { return nil; }
+    [builder setFlags:self.flag];
+    return builder;
+}
+
 #pragma mark Settings
-- (uint)ttl { return (uint)[LKTTLUtilities getTTLFor:LKMessageTypeFriendRequest]; }
+- (uint)ttl {
+    if (this.flag != 0) { return (uint)[LKTTLUtilities getTTLFor:LKMessageTypeEphemeral]; }
+    return (uint)[LKTTLUtilities getTTLFor:LKMessageTypeFriendRequest];
+}
+- (BOOL)isSilent { return (this.flag != 0); }
 - (BOOL)shouldSyncTranscript { return NO; }
 
 @end

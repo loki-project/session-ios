@@ -142,7 +142,7 @@ public final class MultiDeviceProtocol : NSObject {
                     messageSend.failure(errors.first!)
                 }
             }
-        }.catch(on: DispatchQueue.main) { error in
+        }.catch(on: DispatchQueue.main) { error in // Intentionally the main queue
             // Proceed even if updating the recipient's device links failed, so that message sending
             // is independent of whether the file server is online
             let udManager = SSKEnvironment.shared.udManager

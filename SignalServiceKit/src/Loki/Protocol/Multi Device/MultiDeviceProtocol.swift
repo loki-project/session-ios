@@ -142,10 +142,18 @@ public final class MultiDeviceProtocol : NSObject {
                     messageSend.failure(errors.first!)
                 }
             }
-        }.catch(on: OWSDispatch.sendingQueue()) { error in
+        }.catch(on: DispatchQueue.main) { error in
             // Proceed even if updating the recipient's device links failed, so that message sending
             // is independent of whether the file server is online
-            messageSender.sendMessage(messageSend)
+            let udManager = SSKEnvironment.shared.udManager
+            let senderCertificate = udManager.getSenderCertificate()
+            var recipientUDAccess: OWSUDAccess?
+            if let senderCertificate = senderCertificate {
+                recipientUDAccess = udManager.udAccess(forRecipientId: recipientID, requireSyncAccess: true) // Starts a new write transaction internally
+            }
+            OWSDispatch.sendingQueue().async {
+                messageSender.sendMessage(messageSend)
+            }
         }
     }
 

@@ -523,7 +523,7 @@ NSError *EnsureDecryptError(NSError *_Nullable error, NSString *fallbackErrorDes
             NSError *_Nullable underlyingError;
             SSKProtoEnvelope *_Nullable identifiedEnvelope;
 
-            if (![decryptError.domain isEqualToString:@"SignalMetadataKit.SecretSessionKnownSenderError"]) {
+            if (![decryptError.domain isEqualToString:@"SessionMetadataKit.SecretSessionKnownSenderError"]) {
                 underlyingError = decryptError;
                 identifiedEnvelope = envelope;
             } else {
@@ -571,7 +571,7 @@ NSError *EnsureDecryptError(NSError *_Nullable error, NSString *fallbackErrorDes
                 return;
             }
 
-            if ([underlyingError.domain isEqualToString:@"SignalMetadataKit.SMKSecretSessionCipherError"]
+            if ([underlyingError.domain isEqualToString:@"SessionMetadataKit.SMKSecretSessionCipherError"]
                 && underlyingError.code == SMKSecretSessionCipherErrorSelfSentMessage) {
                 // Self-sent messages can be safely discarded.
                 failureBlock(underlyingError);

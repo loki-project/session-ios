@@ -737,6 +737,10 @@ typedef enum : NSUInteger {
     if ([self.thread isKindOfClass:TSContactThread.class]) {
         [LKStorage writeWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
             [SSKEnvironment.shared.profileManager ensureProfileCachedForContactWithID:self.thread.contactIdentifier with:transaction];
+            NSSet *deviceLinks = [LKDatabaseUtilities getDeviceLinksFor:self.thread.contactIdentifier in:transaction];
+            for (LKDeviceLink *deviceLink in deviceLinks) {
+                [SSKEnvironment.shared.profileManager ensureProfileCachedForContactWithID:deviceLink.slave.hexEncodedPublicKey with:transaction];
+            }
         }];
     }
 }

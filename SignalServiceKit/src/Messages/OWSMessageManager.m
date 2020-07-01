@@ -452,7 +452,16 @@ NS_ASSUME_NONNULL_BEGIN
         }
 
         // Loki: Handle session restoration request if needed
-        if ([LKSessionManagementProtocol isSessionRestorationRequest:contentProto.dataMessage]) { return; } // Don't process the message any further
+        if ([LKSessionManagementProtocol isSessionRestorationRequest:contentProto.dataMessage]) {
+            NSString *sender = envelope.source;
+            TSContactThread *thread = [TSContactThread getThreadWithContactId:sender transaction:transaction];
+            if (thread != NULL && thread.isContactFriend) {
+                [LKSessionManagementProtocol handleEndSessionMessageReceivedInThread:thread using:transaction];
+                // Notify our other devices that we've started a session reset
+                [SSKEnvironment.shared.syncManager syncContact:sender transaction:transaction];
+            }
+            return;
+        } // Don't process the message any further
 
         // Loki: Handle friend request acceptance if needed
         [LKFriendRequestProtocol handleFriendRequestAcceptanceIfNeeded:envelope in:transaction];

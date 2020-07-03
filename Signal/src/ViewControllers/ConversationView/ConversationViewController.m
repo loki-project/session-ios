@@ -1066,7 +1066,7 @@ typedef enum : NSUInteger {
     BOOL shouldDetachBanner = !isContactThread;
     if (isContactThread) {
         TSContactThread *thread = (TSContactThread *)self.thread;
-        if (thread.sessionRestoreDevices.count > 0) {
+        if (thread.sessionRestoreDevices.count > 0 && thread.sessionResetStatus == LKSessionResetStatusNone) {
             if (self.restoreSessionBannerView == nil) {
                 LKSessionRestorationView *bannerView = [[LKSessionRestorationView alloc] initWithThread:thread];
                 [self.view addSubview:bannerView];

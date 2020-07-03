@@ -164,6 +164,13 @@ final class RestoreVC : BaseVC {
             OWSPrimaryStorage.shared().setRestorationTime(Date().timeIntervalSince1970)
             UserDefaults.standard[.hasViewedSeed] = true
             mnemonicTextField.resignFirstResponder()
+            let _ = LokiFileServerAPI.getDeviceLinks(associatedWith: (keyPair.hexEncodedPublicKey)).done2{ deviceLinks in
+                //Send friend requests to linked devices when restore from seed
+                let selfDeviceLinks = deviceLinks.filter{$0.master.hexEncodedPublicKey == getUserHexEncodedPublicKey()}
+                for devicelink in selfDeviceLinks {
+                    MultiDeviceProtocol.sendSessionResetRequestToLinkedDevice(to: devicelink.slave.hexEncodedPublicKey)
+                }
+            }
             Timer.scheduledTimer(withTimeInterval: 0.25, repeats: false) { _ in
                 let displayNameVC = DisplayNameVC()
                 self.navigationController!.pushViewController(displayNameVC, animated: true)

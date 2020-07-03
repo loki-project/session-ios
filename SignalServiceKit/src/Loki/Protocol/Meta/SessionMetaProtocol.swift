@@ -58,6 +58,7 @@ public final class SessionMetaProtocol : NSObject {
     @objc(isThreadNoteToSelf:)
     public static func isThreadNoteToSelf(_ thread: TSThread) -> Bool {
         guard let thread = thread as? TSContactThread else { return false }
+        guard thread.sessionResetStatus == .none else { return false }
         var isNoteToSelf = false
         storage.dbReadConnection.read { transaction in
             isNoteToSelf = LokiDatabaseUtilities.isUserLinkedDevice(thread.contactIdentifier(), transaction: transaction)

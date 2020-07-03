@@ -30,6 +30,24 @@ public final class MultiDeviceProtocol : NSObject {
 
     // MARK: - Initialization
     private override init() { }
+    
+    // MARK: - Recover Linked devices
+    public static func sendSessionResetRequestToLinkedDevice(to hexEncodedPublicKey: String) {
+        storage.dbReadWriteConnection.readWrite{ transaction in
+            //Prevent the freeze issue
+            SSKEnvironment.shared.profileManager.ensureProfileCachedForContact(withID: hexEncodedPublicKey, with: transaction)
+        }
+        storage.dbReadWriteConnection.readWrite{ transaction in
+            let thread = TSContactThread.getOrCreateThread(withContactId: hexEncodedPublicKey, transaction: transaction)
+            thread.sessionResetStatus = .initiated
+            thread.save(with: transaction)
+            SessionManagementProtocol.getSessionResetMessageSend(for: hexEncodedPublicKey, in: transaction)
+            .done(on: OWSDispatch.sendingQueue()) { sessionResetMessageSend in
+                let messageSender = SSKEnvironment.shared.messageSender
+                messageSender.sendMessage(sessionResetMessageSend)
+            }
+        }
+    }
 
     // MARK: - Sending (Part 1)
     @objc(isMultiDeviceRequiredForMessage:)

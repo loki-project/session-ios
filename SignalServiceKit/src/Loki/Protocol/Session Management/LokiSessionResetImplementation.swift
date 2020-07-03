@@ -52,12 +52,13 @@ public class LokiSessionResetImplementation : NSObject, SessionResetProtocol {
         // If the current user initiated the reset then send back an empty message to acknowledge the completion of the session reset
         if thread.sessionResetStatus == .initiated {
             let emptyMessage = EphemeralMessage(thread: thread)
-            SSKEnvironment.shared.messageSender.sendPromise(message: emptyMessage).retainUntilComplete()
+            SSKEnvironment.shared.messageSender.sendPromise(message: emptyMessage).done2{ _ in
+                // Clear the session reset status
+                thread.sessionResetStatus = .none
+                thread.save()
+            }.retainUntilComplete()
+            // Show session reset done message
+            TSInfoMessage(timestamp: NSDate.ows_millisecondTimeStamp(), in: thread, messageType: .typeLokiSessionResetDone).save(with: transaction)
         }
-        // Show session reset done message
-        TSInfoMessage(timestamp: NSDate.ows_millisecondTimeStamp(), in: thread, messageType: .typeLokiSessionResetDone).save(with: transaction)
-        // Clear the session reset status
-        thread.sessionResetStatus = .none
-        thread.save(with: transaction)
     }
 }

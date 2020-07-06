@@ -669,9 +669,15 @@ NSError *EnsureDecryptError(NSError *_Nullable error, NSString *fallbackErrorDes
 
         OWSAssertDebug(errorMessage);
         if (errorMessage != nil) {
-            [errorMessage saveWithTransaction:transaction];
             [LKSessionManagementProtocol handleDecryptionError:errorMessage.errorType forHexEncodedPublicKey:envelope.source using:transaction];
-            [self notifyUserForErrorMessage:errorMessage envelope:envelope transaction:transaction];
+            if (![LKSessionManagementProtocol isErrorMessageBeforeRestoration:errorMessage]) {
+                [errorMessage saveWithTransaction:transaction];
+                [self notifyUserForErrorMessage:errorMessage envelope:envelope transaction:transaction];
+            } else {
+                TSContactThread *thread = [TSContactThread getOrCreateThreadWithContactId:envelope.source transaction:transaction];
+                thread.shouldThreadBeVisible = true;
+                [thread saveWithTransaction:transaction];
+            }
         }
     } error:nil];
 }

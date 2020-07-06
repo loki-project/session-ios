@@ -174,6 +174,12 @@ public final class SessionManagementProtocol : NSObject {
         default: break
         }
     }
+    
+    @objc(isErrorMessageBeforeRestoration:)
+    public static func isErrorMessageBeforeRestoration(_ errorMessage: TSErrorMessage) -> Bool {
+        let restorationTimeInMs = UInt64(storage.getRestorationTime() * 1000)
+        return errorMessage.timestamp < restorationTimeInMs
+    }
 
     @objc(isSessionRestorationRequest:)
     public static func isSessionRestorationRequest(_ dataMessage: SSKProtoDataMessage?) -> Bool {

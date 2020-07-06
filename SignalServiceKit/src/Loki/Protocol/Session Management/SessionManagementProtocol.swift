@@ -167,8 +167,10 @@ public final class SessionManagementProtocol : NSObject {
         // Show the session reset prompt upon certain errors
         switch type {
         case .noSession, .invalidMessage, .invalidKeyException:
-            // Store the source device's public key in case it was a secondary device
-            thread.addSessionRestoreDevice(hexEncodedPublicKey, transaction: transaction)
+            if (thread.sessionResetStatus == .none) {
+                // Store the source device's public key in case it was a secondary device
+                thread.addSessionRestoreDevice(hexEncodedPublicKey, transaction: transaction)
+            }
         default: break
         }
     }
@@ -234,6 +236,8 @@ public final class SessionManagementProtocol : NSObject {
         let publicKey = thread.contactIdentifier()
         print("[Loki] End session message received from: \(publicKey).")
         // Notify the user
+        let masterHexEncodedPublicKey = storage.getMasterHexEncodedPublicKey(for: publicKey, in: transaction) ?? publicKey
+        let thread = TSContactThread.getOrCreateThread(withContactId: masterHexEncodedPublicKey, transaction: transaction)
         let infoMessage = TSInfoMessage(timestamp: NSDate.ows_millisecondTimeStamp(), in: thread, messageType: .typeLokiSessionResetInProgress)
         infoMessage.save(with: transaction)
         // Archive all sessions

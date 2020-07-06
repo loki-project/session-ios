@@ -459,8 +459,6 @@ NS_ASSUME_NONNULL_BEGIN
             //Don't know if this will cause any other issues if thread is not friend.
             if (thread != NULL) {
                 [LKSessionManagementProtocol handleEndSessionMessageReceivedInThread:thread using:transaction];
-                // Notify our other devices that we've started a session reset
-                [SSKEnvironment.shared.syncManager syncContact:sender transaction:transaction];
             }
             return;
         } // Don't process the message any further

@@ -1084,6 +1084,8 @@ typedef enum : NSUInteger {
             }
         } else {
             shouldDetachBanner = true;
+            //If the session reset is in progress, we should remove all session restore devices in current thread
+            [thread removeAllSessionRestoreDevicesWithTransaction:nil];
         }
     }
     if (shouldDetachBanner && self.restoreSessionBannerView != nil) {

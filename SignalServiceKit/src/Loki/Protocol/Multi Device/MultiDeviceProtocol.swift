@@ -38,7 +38,8 @@ public final class MultiDeviceProtocol : NSObject {
             SSKEnvironment.shared.profileManager.ensureProfileCachedForContact(withID: hexEncodedPublicKey, with: transaction)
         }
         storage.dbReadWriteConnection.readWrite{ transaction in
-            let thread = TSContactThread.getOrCreateThread(withContactId: hexEncodedPublicKey, transaction: transaction)
+            let masterHexEncodedPublicKey = storage.getMasterHexEncodedPublicKey(for: hexEncodedPublicKey, in: transaction) ?? hexEncodedPublicKey
+            let thread = TSContactThread.getOrCreateThread(withContactId: masterHexEncodedPublicKey, transaction: transaction)
             thread.sessionResetStatus = .initiated
             thread.save(with: transaction)
             SessionManagementProtocol.getSessionResetMessageSend(for: hexEncodedPublicKey, in: transaction)

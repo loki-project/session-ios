@@ -672,12 +672,8 @@ NSError *EnsureDecryptError(NSError *_Nullable error, NSString *fallbackErrorDes
             [LKSessionManagementProtocol handleDecryptionError:errorMessage.errorType forHexEncodedPublicKey:envelope.source using:transaction];
             if (![LKSessionManagementProtocol isErrorMessageBeforeRestoration:errorMessage]) {
                 [errorMessage saveWithTransaction:transaction];
-                [self notifyUserForErrorMessage:errorMessage envelope:envelope transaction:transaction];
-            } else {
-                TSContactThread *thread = [TSContactThread getOrCreateThreadWithContactId:envelope.source transaction:transaction];
-                thread.shouldThreadBeVisible = true;
-                [thread saveWithTransaction:transaction];
             }
+            [self notifyUserForErrorMessage:errorMessage envelope:envelope transaction:transaction];
         }
     } error:nil];
 }
@@ -688,6 +684,8 @@ NSError *EnsureDecryptError(NSError *_Nullable error, NSString *fallbackErrorDes
 {
     NSString *hexEncodedPublicKey = [LKDatabaseUtilities getMasterHexEncodedPublicKeyFor:envelope.source in:transaction] ?: envelope.source;
     TSThread *contactThread = [TSContactThread getOrCreateThreadWithContactId:hexEncodedPublicKey transaction:transaction];
+    contactThread.shouldThreadBeVisible = true;
+    [contactThread saveWithTransaction:transaction];
     [SSKEnvironment.shared.notificationsManager notifyUserForErrorMessage:errorMessage
                                                                    thread:contactThread
                                                               transaction:transaction];

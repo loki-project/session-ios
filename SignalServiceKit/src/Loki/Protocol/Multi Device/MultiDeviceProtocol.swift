@@ -37,14 +37,14 @@ public final class MultiDeviceProtocol : NSObject {
         }
         storage.dbReadWriteConnection.readWrite{ transaction in
             let masterHexEncodedPublicKey = storage.getMasterHexEncodedPublicKey(for: hexEncodedPublicKey, in: transaction) ?? hexEncodedPublicKey
-            let thread = TSContactThread.getOrCreateThread(withContactId: masterHexEncodedPublicKey, transaction: transaction)
-            thread.sessionResetStatus = .initiated
-            thread.save(with: transaction)
-            SessionManagementProtocol.getSessionResetMessageSend(for: hexEncodedPublicKey, in: transaction)
-            .done(on: OWSDispatch.sendingQueue()) { sessionResetMessageSend in
-                let messageSender = SSKEnvironment.shared.messageSender
-                messageSender.sendMessage(sessionResetMessageSend)
-            }
+            let masterThread = TSContactThread.getOrCreateThread(withContactId: masterHexEncodedPublicKey, transaction: transaction)
+            masterThread.sessionResetStatus = .initiated
+            masterThread.save(with: transaction)
+            let thread = TSContactThread.getOrCreateThread(withContactId: hexEncodedPublicKey, transaction: transaction)
+            let sessionRestorationRequestMessage = SessionRestoreMessage(thread: thread)
+            sessionRestorationRequestMessage.save(with: transaction)
+            let messageSenderJobQueue = SSKEnvironment.shared.messageSenderJobQueue
+            messageSenderJobQueue.add(message: sessionRestorationRequestMessage, transaction: transaction)
         }
     }
 

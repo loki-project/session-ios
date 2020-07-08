@@ -62,6 +62,7 @@ public final class SessionManagementProtocol : NSObject {
     public static func isSessionRequired(for message: TSOutgoingMessage) -> Bool {
         if message is FriendRequestMessage { return false }
         else if message is SessionRequestMessage { return false }
+        else if message is SessionRestoreMessage { return false } // TODO: Remove this after ditching session restore message
         else if let message = message as? DeviceLinkMessage, message.kind == .request { return false }
         else if (message.thread as? TSGroupThread)?.usesSharedSenderKeys == true { return false }
         return true
@@ -158,29 +159,32 @@ public final class SessionManagementProtocol : NSObject {
         thread.sessionResetStatus = .initiated
         thread.save(with: transaction)
     }
+    
+    // MARK: - Session Reset
+    
+    public static func sendSessionRequestIfNeeded(in thread: TSContactThread, using transaction: YapDatabaseReadWriteTransaction) {
+        let hasSession = storage.containsSession(thread.contactIdentifier(), deviceId: Int32(OWSDevicePrimaryDeviceId), protocolContext: transaction)
+        guard !hasSession && thread.sessionResetStatus == .none else { return }
+        // TODO: send session request
+    }
 
     // MARK: - Receiving
     
     @objc(handleDecryptionError:forPublicKey:transaction:)
     public static func handleDecryptionError(_ rawValue: Int32, for publicKey: String, using transaction: YapDatabaseReadWriteTransaction) {
         let type = TSErrorMessageType(rawValue: rawValue)
-        let masterPublicKey = storage.getMasterHexEncodedPublicKey(for: publicKey, in: transaction) ?? publicKey
-        let thread = TSContactThread.getOrCreateThread(withContactId: masterPublicKey, transaction: transaction)
-        // Show the session reset prompt upon certain errors
+        let thread = TSContactThread.getOrCreateThread(withContactId: publicKey, transaction: transaction)
+        // Move session reset progress to background
         switch type {
         case .noSession, .invalidMessage, .invalidKeyException:
             if (thread.sessionResetStatus == .none) {
                 // Store the source device's public key in case it was a secondary device
                 thread.addSessionRestoreDevice(publicKey, transaction: transaction)
             }
+            // TODO: should move to this
+            // sendSessionRequestIfNeeded(in: thread, using: transaction)
         default: break
         }
-    }
-    
-    @objc(isErrorMessageBeforeRestoration:)
-    public static func isErrorMessageBeforeRestoration(_ errorMessage: TSErrorMessage) -> Bool {
-        let restorationTimeInMs = UInt64(storage.getRestorationTime() * 1000)
-        return errorMessage.timestamp < restorationTimeInMs
     }
 
     @objc(handlePreKeyBundleMessageIfNeeded:wrappedIn:transaction:)
@@ -220,6 +224,7 @@ public final class SessionManagementProtocol : NSObject {
         let publicKey = thread.contactIdentifier()
         print("[Loki] End session message received from: \(publicKey).")
         // Notify the user
+        // Make sure the info message is shown in the master thread
         let masterHexEncodedPublicKey = storage.getMasterHexEncodedPublicKey(for: publicKey, in: transaction) ?? publicKey
         let thread = TSContactThread.getOrCreateThread(withContactId: masterHexEncodedPublicKey, transaction: transaction)
         let infoMessage = TSInfoMessage(timestamp: NSDate.ows_millisecondTimeStamp(), in: thread, messageType: .typeLokiSessionResetInProgress)

@@ -14,6 +14,9 @@ import PromiseKit
 public final class SessionMetaProtocol : NSObject {
 
     internal static var storage: OWSPrimaryStorage { OWSPrimaryStorage.shared() }
+    // Store the pubkeys of threads that shows an error message when recovering from seed
+    // To prevent spam error messages
+    internal static var errorThreadsBeforeRestoration: Set<String> = []
 
     // MARK: - Sending
 
@@ -52,18 +55,26 @@ public final class SessionMetaProtocol : NSObject {
     @objc(isThreadNoteToSelf:)
     public static func isThreadNoteToSelf(_ thread: TSThread) -> Bool {
         guard let thread = thread as? TSContactThread else { return false }
-        let hexEncodedPublicKey = thread.contactIdentifier()
         var isNoteToSelf = false
+        storage.dbReadConnection.read { transaction in
+            isNoteToSelf = LokiDatabaseUtilities.isUserLinkedDevice(thread.contactIdentifier(), transaction: transaction)
+        }
+        return isNoteToSelf
+    }
+    
+    @objc(shouldSendToSelf:)
+    public static func shouldSendToSelf(_ thread: TSThread) -> Bool {
+        guard let thread = thread as? TSContactThread else { return false }
+        let hexEncodedPublicKey = thread.contactIdentifier()
+        var shouldSend = false
         storage.dbReadConnection.read { transaction in
             //When session reset status is not none, only send the message to linked device
             let masterHexEncodedPublicKey = storage.getMasterHexEncodedPublicKey(for: hexEncodedPublicKey, in: transaction) ?? hexEncodedPublicKey
-            if let masterThread = TSContactThread.getWithContactId(masterHexEncodedPublicKey, transaction: transaction), masterThread.sessionResetStatus == .none {
-                isNoteToSelf = LokiDatabaseUtilities.isUserLinkedDevice(thread.contactIdentifier(), transaction: transaction)
-            } else {
-                isNoteToSelf = thread.contactIdentifier() == getUserHexEncodedPublicKey()
+            if let masterThread = TSContactThread.getWithContactId(masterHexEncodedPublicKey, transaction: transaction) {
+                shouldSend = masterThread.sessionResetStatus != .none
             }
         }
-        return isNoteToSelf
+        return shouldSend || thread.sessionResetStatus != .none
     }
 
     // MARK: Transcripts
@@ -146,5 +157,19 @@ public final class SessionMetaProtocol : NSObject {
         let profilePictureURL = dataMessage.profile?.profilePicture
         let profileManager = SSKEnvironment.shared.profileManager
         profileManager.setProfileKeyData(profileKey, forRecipientId: publicKey, avatarURL: profilePictureURL)
+    }
+    
+    // Just show error message once after recovering from the seed
+    @objc(shouldErrorMessageShow:sender:)
+    public static func shouldErrorMessageShow(_ errorMessage: TSErrorMessage, sender: String) -> Bool {
+        let restorationTimeInMs = UInt64(storage.getRestorationTime() * 1000)
+        if (errorMessage.timestamp < restorationTimeInMs) {
+            if (errorThreadsBeforeRestoration.contains(sender)) {
+                return false
+            } else {
+                errorThreadsBeforeRestoration.insert(sender)
+            }
+        }
+        return true
     }
 }

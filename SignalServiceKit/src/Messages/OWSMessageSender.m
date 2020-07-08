@@ -691,8 +691,11 @@ NSString *const OWSMessageSenderRateLimitedException = @"RateLimitedException";
     if ([LKSessionMetaProtocol isThreadNoteToSelf:thread]
         && !([message isKindOfClass:LKDeviceLinkMessage.class]) && !([message isKindOfClass:LKClosedGroupUpdateMessage.class])) {
         // Don't mark self-sent messages as read (or sent) until the sync transcript is sent
-        successHandler();
-        return;
+        // Should send to linked device when session is resetting
+        if (![LKSessionMetaProtocol shouldSendToSelf:thread]) {
+            successHandler();
+            return;
+        }
     }
 
     if (thread.isGroupThread) {

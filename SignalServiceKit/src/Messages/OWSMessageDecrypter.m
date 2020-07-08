@@ -672,11 +672,11 @@ NSError *EnsureDecryptError(NSError *_Nullable error, NSString *fallbackErrorDes
 
         OWSAssertDebug(errorMessage);
         if (errorMessage != nil) {
-            [LKSessionManagementProtocol handleDecryptionError:errorMessage.errorType forHexEncodedPublicKey:envelope.source using:transaction];
-            if (![LKSessionManagementProtocol isErrorMessageBeforeRestoration:errorMessage]) {
+            [LKSessionManagementProtocol handleDecryptionError:errorMessage.errorType forPublicKey:envelope.source transaction:transaction];
+            if ([LKSessionMetaProtocol shouldErrorMessageShow:errorMessage sender:envelope.source]) {
                 [errorMessage saveWithTransaction:transaction];
+                [self notifyUserForErrorMessage:errorMessage envelope:envelope transaction:transaction];
             }
-            [self notifyUserForErrorMessage:errorMessage envelope:envelope transaction:transaction];
         }
     } error:nil];
 }

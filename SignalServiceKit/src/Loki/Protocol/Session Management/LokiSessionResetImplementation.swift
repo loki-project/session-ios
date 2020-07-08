@@ -57,7 +57,7 @@ public class LokiSessionResetImplementation : NSObject, SessionResetProtocol {
                 // Update the session reset status
                 masterThread.sessionResetStatus = .none
                 masterThread.save()
-            }.retainUntilComplete()
+            }
             // Notify the user
             let infoMessage = TSInfoMessage(timestamp: NSDate.ows_millisecondTimeStamp(), in: masterThread, messageType: .typeLokiSessionResetDone)
             infoMessage.save(with: transaction)

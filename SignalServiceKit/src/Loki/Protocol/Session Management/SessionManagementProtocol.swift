@@ -165,10 +165,14 @@ public final class SessionManagementProtocol : NSObject {
     public static func sendSessionRequestIfNeeded(in thread: TSContactThread, using transaction: YapDatabaseReadWriteTransaction) {
         let hasSession = storage.containsSession(thread.contactIdentifier(), deviceId: Int32(OWSDevicePrimaryDeviceId), protocolContext: transaction)
         guard !hasSession && thread.sessionResetStatus == .none else { return }
-        // TODO: send session request
         let sessionReset = FriendRequestMessage(timestamp: NSDate.ows_millisecondTimeStamp(), thread: thread, body: "")
         let messageSenderJobQueue = SSKEnvironment.shared.messageSenderJobQueue
         messageSenderJobQueue.add(message: sessionReset, transaction: transaction)
+        // TODO:
+        // hasPendingSessionRequest, updateSessionRequestSent
+        // put the logic back to current thread rather than master thread
+        // remove session reset banner, put things background
+        // do not show the info message of session reset for now
     }
 
     // MARK: - Receiving
@@ -185,7 +189,7 @@ public final class SessionManagementProtocol : NSObject {
                 thread.addSessionRestoreDevice(publicKey, transaction: transaction)
             }
             // TODO: should move to this
-             sendSessionRequestIfNeeded(in: thread, using: transaction)
+            // sendSessionRequestIfNeeded(in: thread, using: transaction)
         default: break
         }
     }

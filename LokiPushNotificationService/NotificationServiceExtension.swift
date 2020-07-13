@@ -53,10 +53,12 @@ final class NotificationServiceExtension : UNNotificationServiceExtension {
         var displayName = masterHexEncodedPublicKey
         if let groupID = contentProto?.dataMessage?.group?.id {
            thread = TSGroupThread.getOrCreateThread(withGroupId: groupID, groupType: .closedGroup, transaction: transaction)
-            displayName = thread.name()
-            if displayName.count < 1 {
-                displayName = MessageStrings.newGroupDefaultTitle
+            var groupName = thread.name()
+            if groupName.count < 1 {
+                groupName = MessageStrings.newGroupDefaultTitle
             }
+            let senderName = OWSUserProfile.fetch(uniqueId: masterHexEncodedPublicKey, transaction: transaction)?.profileName ?? SSKEnvironment.shared.contactsManager .displayName(forPhoneIdentifier: masterHexEncodedPublicKey)
+            displayName = String(format: NotificationStrings.incomingGroupMessageTitleFormat, senderName, groupName)
             let group: SSKProtoGroupContext = (contentProto?.dataMessage?.group!)!
             let oldGroupModel = (thread as! TSGroupThread).groupModel
             var removeMembers = Set(arrayLiteral: oldGroupModel.groupMemberIds)

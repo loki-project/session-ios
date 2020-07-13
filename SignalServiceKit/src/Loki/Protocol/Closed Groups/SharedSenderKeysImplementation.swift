@@ -81,7 +81,10 @@ public final class SharedSenderKeysImplementation : NSObject, SharedSenderKeysPr
         }
         do {
             let result = try step(ratchet)
-            Storage.setClosedGroupRatchet(for: groupPublicKey, senderPublicKey: senderPublicKey, ratchet: result, using: transaction)
+            if (CurrentAppContext().isMainApp) {
+                //DO NOT store this if it is used by notification extension
+                Storage.setClosedGroupRatchet(for: groupPublicKey, senderPublicKey: senderPublicKey, ratchet: result, using: transaction)
+            }
             return result
         } catch {
             print("[Loki] Couldn't step ratchet due to error: \(error).")
@@ -119,7 +122,10 @@ public final class SharedSenderKeysImplementation : NSObject, SharedSenderKeysPr
                     throw error
                 }
             }
-            Storage.setClosedGroupRatchet(for: groupPublicKey, senderPublicKey: senderPublicKey, ratchet: result, using: transaction)
+            if (CurrentAppContext().isMainApp) {
+                //DO NOT store this if it is used by notification extension
+                Storage.setClosedGroupRatchet(for: groupPublicKey, senderPublicKey: senderPublicKey, ratchet: result, using: transaction)
+            }
             return result
         }
     }

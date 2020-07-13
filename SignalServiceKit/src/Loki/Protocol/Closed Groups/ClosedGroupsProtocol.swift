@@ -393,6 +393,7 @@ public final class ClosedGroupsProtocol : NSObject {
         return result
     }
 
+    /// - Note: Deprecated.
     @objc(shouldIgnoreClosedGroupUpdateMessage:inThread:wrappedIn:)
     public static func shouldIgnoreClosedGroupUpdateMessage(_ dataMessage: SSKProtoDataMessage, in thread: TSGroupThread, wrappedIn envelope: SSKProtoEnvelope) -> Bool {
         guard thread.groupModel.groupType == .closedGroup else { return true }

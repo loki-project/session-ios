@@ -12,7 +12,7 @@ import PromiseKit
 /// See [the documentation](https://github.com/loki-project/session-protocol-docs/wiki/Medium-Size-Groups) for more information.
 @objc(LKClosedGroupsProtocol)
 public final class ClosedGroupsProtocol : NSObject {
-    public static let isSharedSenderKeysEnabled = false
+    public static let isSharedSenderKeysEnabled = true
 
     // MARK: - Sending
 
@@ -66,6 +66,8 @@ public final class ClosedGroupsProtocol : NSObject {
         // Notify the user
         let infoMessage = TSInfoMessage(timestamp: NSDate.ows_millisecondTimeStamp(), in: thread, messageType: .typeGroupUpdate)
         infoMessage.save(with: transaction)
+        //Notifiy the PN server to subscribe
+        LokiPushNotificationManager.operateClosedGroup(to: groupPublicKey, hexEncodedPublicKey: userPublicKey, operation: .subscribe)
         // Return
         return when(fulfilled: promises).map2 { thread }
     }
@@ -127,6 +129,8 @@ public final class ClosedGroupsProtocol : NSObject {
     public static func leave(_ groupPublicKey: String, using transaction: YapDatabaseReadWriteTransaction) {
         let userPublicKey = UserDefaults.standard[.masterHexEncodedPublicKey] ?? getUserHexEncodedPublicKey()
         removeMembers([ userPublicKey ], from: groupPublicKey, using: transaction)
+        //Notifiy the PN server to unsubscribe
+        LokiPushNotificationManager.operateClosedGroup(to: groupPublicKey, hexEncodedPublicKey: userPublicKey, operation: .unsubscribe)
     }
 
     public static func removeMembers(_ membersToRemove: Set<String>, from groupPublicKey: String, using transaction: YapDatabaseReadWriteTransaction) {
@@ -164,6 +168,8 @@ public final class ClosedGroupsProtocol : NSObject {
         // members (minus the removed ones) and their linked devices using established channels.
         if isUserLeaving {
             Storage.removeClosedGroupPrivateKey(for: groupPublicKey, using: transaction)
+            //Notifiy the PN server to unsubscribe
+            LokiPushNotificationManager.operateClosedGroup(to: groupPublicKey, hexEncodedPublicKey: userPublicKey, operation: .unsubscribe)
         } else {
             // Establish sessions if needed
             establishSessionsIfNeeded(with: members, using: transaction) // This internally takes care of multi device
@@ -242,6 +248,8 @@ public final class ClosedGroupsProtocol : NSObject {
         infoMessage.save(with: transaction)
         // Establish sessions if needed
         establishSessionsIfNeeded(with: members, using: transaction) // This internally takes care of multi device
+        //Notifiy the PN server to subscribe
+        LokiPushNotificationManager.operateClosedGroup(to: groupPublicKey, hexEncodedPublicKey: getUserHexEncodedPublicKey(), operation: .subscribe)
     }
 
     /// Invoked upon receiving a group update. A group update is sent out when a group's name is changed, when new users are added, when users leave or are

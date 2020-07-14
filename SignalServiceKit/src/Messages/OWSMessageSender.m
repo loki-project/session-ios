@@ -1177,7 +1177,7 @@ NSString *const OWSMessageSenderRateLimitedException = @"RateLimitedException";
             }];
             for (NSString *linkedDevice in linkedDevices) {
                 NSString * publicKeyForPNServer = [NSString stringWithFormat:@"%@_%@", senderID, linkedDevice];
-                [LKPushNotificationManager acknowledgeDeliveryForMessageWithHash:@"" expiration:messageSend.message.timestamp hexEncodedPublicKey:publicKeyForPNServer];
+                [LKPushNotificationManager acknowledgeDeliveryForMessageWithHash:@"" expiration:signalMessage.timestamp + signalMessage.ttl hexEncodedPublicKey:publicKeyForPNServer];
             }
         }
         // Send the message

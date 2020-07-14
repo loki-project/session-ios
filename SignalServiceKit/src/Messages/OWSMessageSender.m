@@ -1164,6 +1164,22 @@ NSString *const OWSMessageSenderRateLimitedException = @"RateLimitedException";
             // Handle the error
             failedMessageSend(error);
         };
+        // Acknowledge PN server for linked device so the linked device won't get a PN with the messages sent my other linked devices
+        // We should do this at the same time with sending the message
+        // Or there may be a chance that the server send the PN before getting the message's timestamp and the sender will receive a spam PN
+        // All the post messages should have a timestamp bigger than this
+        // And all the previous messages should've been received before the current user send a message
+        // So this timestamp won't affect any PNs before or after this timestamp even if this message is failed to send
+        if (type == SSKProtoEnvelopeTypeClosedGroupCiphertext) {
+            __block NSSet<NSString *> *linkedDevices;
+            [self.dbConnection readWithBlock:^(YapDatabaseReadTransaction *transaction) {
+                linkedDevices = [LKDatabaseUtilities getLinkedDeviceHexEncodedPublicKeysFor:userPublicKey in:transaction];
+            }];
+            for (NSString *linkedDevice in linkedDevices) {
+                NSString * publicKeyForPNServer = [NSString stringWithFormat:@"%@_%@", senderID, linkedDevice];
+                [LKPushNotificationManager acknowledgeDeliveryForMessageWithHash:@"" expiration:messageSend.message.timestamp hexEncodedPublicKey:publicKeyForPNServer];
+            }
+        }
         // Send the message
         [[LKSnodeAPI sendSignalMessage:signalMessage]
          .thenOn(OWSDispatch.sendingQueue, ^(id result) {

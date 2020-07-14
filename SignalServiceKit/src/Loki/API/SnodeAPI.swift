@@ -243,8 +243,7 @@ public final class SnodeAPI : NSObject {
 
     internal static func parseRawMessagesResponse(_ rawResponse: Any, from snode: Snode, associatedWith publicKey: String) -> [SSKProtoEnvelope] {
         guard let json = rawResponse as? JSON, let rawMessages = json["messages"] as? [JSON] else { return [] }
-        if let (lastHash, expirationDate) = updateLastMessageHashValueIfPossible(for: snode, associatedWith: publicKey, from: rawMessages),
-           UserDefaults.standard[.isUsingFullAPNs] {
+        if let (lastHash, expirationDate) = updateLastMessageHashValueIfPossible(for: snode, associatedWith: publicKey, from: rawMessages) {
             let userHexEncodedPublicKey = getUserHexEncodedPublicKey()
             var publicKeyForPNServer = publicKey
             if (publicKey != userHexEncodedPublicKey) {

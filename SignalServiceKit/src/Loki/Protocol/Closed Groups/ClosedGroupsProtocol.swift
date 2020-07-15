@@ -12,7 +12,7 @@ import PromiseKit
 /// See [the documentation](https://github.com/loki-project/session-protocol-docs/wiki/Medium-Size-Groups) for more information.
 @objc(LKClosedGroupsProtocol)
 public final class ClosedGroupsProtocol : NSObject {
-    public static let isSharedSenderKeysEnabled = true
+    @objc public static let isSharedSenderKeysEnabled = true
 
     // MARK: - Sending
 
@@ -125,12 +125,11 @@ public final class ClosedGroupsProtocol : NSObject {
         let infoMessage = TSInfoMessage(timestamp: NSDate.ows_millisecondTimeStamp(), in: thread, messageType: .typeGroupUpdate)
         infoMessage.save(with: transaction)
     }
-
+    
+    @objc(leaveGroup:transaction:)
     public static func leave(_ groupPublicKey: String, using transaction: YapDatabaseReadWriteTransaction) {
         let userPublicKey = UserDefaults.standard[.masterHexEncodedPublicKey] ?? getUserHexEncodedPublicKey()
         removeMembers([ userPublicKey ], from: groupPublicKey, using: transaction)
-        //Notifiy the PN server to unsubscribe
-        LokiPushNotificationManager.operateClosedGroup(to: groupPublicKey, hexEncodedPublicKey: userPublicKey, operation: .unsubscribe)
     }
 
     public static func removeMembers(_ membersToRemove: Set<String>, from groupPublicKey: String, using transaction: YapDatabaseReadWriteTransaction) {
@@ -141,6 +140,7 @@ public final class ClosedGroupsProtocol : NSObject {
             return print("[Loki] Can't remove self and others simultaneously.")
         }
         let messageSenderJobQueue = SSKEnvironment.shared.messageSenderJobQueue
+        let messageSender = SSKEnvironment.shared.messageSender
         let groupID = LKGroupUtilities.getEncodedClosedGroupIDAsData(groupPublicKey)
         guard let thread = TSGroupThread.fetch(uniqueId: TSGroupThread.threadId(fromGroupId: groupID), transaction: transaction) else {
             return print("[Loki] Can't remove users from nonexistent closed group.")
@@ -161,28 +161,31 @@ public final class ClosedGroupsProtocol : NSObject {
         let closedGroupUpdateMessageKind = ClosedGroupUpdateMessage.Kind.info(groupPublicKey: Data(hex: groupPublicKey), name: name, senderKeys: [],
             members: membersAsData, admins: adminsAsData)
         let closedGroupUpdateMessage = ClosedGroupUpdateMessage(thread: thread, kind: closedGroupUpdateMessageKind)
-        messageSenderJobQueue.add(message: closedGroupUpdateMessage, transaction: transaction)
-        // Delete all ratchets (it's important that this happens after sending out the update)
-        Storage.removeAllClosedGroupRatchets(for: groupPublicKey, using: transaction)
-        // Remove the group from the user's set of public keys to poll for if the user is leaving. Otherwise generate a new ratchet and send it out to all
-        // members (minus the removed ones) and their linked devices using established channels.
-        if isUserLeaving {
-            Storage.removeClosedGroupPrivateKey(for: groupPublicKey, using: transaction)
-            //Notifiy the PN server to unsubscribe
-            LokiPushNotificationManager.operateClosedGroup(to: groupPublicKey, hexEncodedPublicKey: userPublicKey, operation: .unsubscribe)
-        } else {
-            // Establish sessions if needed
-            establishSessionsIfNeeded(with: members, using: transaction) // This internally takes care of multi device
-            // Send out the user's new ratchet to all members (minus the removed ones) and their linked devices using established channels
-            let userPublicKey = getUserHexEncodedPublicKey()
-            let userRatchet = SharedSenderKeysImplementation.shared.generateRatchet(for: groupPublicKey, senderPublicKey: userPublicKey, using: transaction)
-            let userSenderKey = ClosedGroupSenderKey(chainKey: Data(hex: userRatchet.chainKey), keyIndex: userRatchet.keyIndex, publicKey: Data(hex: userPublicKey))
-            for member in members { // This internally takes care of multi device
-                let thread = TSContactThread.getOrCreateThread(withContactId: member, transaction: transaction)
-                thread.save(with: transaction)
-                let closedGroupUpdateMessageKind = ClosedGroupUpdateMessage.Kind.senderKey(groupPublicKey: Data(hex: groupPublicKey), senderKey: userSenderKey)
-                let closedGroupUpdateMessage = ClosedGroupUpdateMessage(thread: thread, kind: closedGroupUpdateMessageKind)
-                messageSenderJobQueue.add(message: closedGroupUpdateMessage, transaction: transaction)
+        let promise = messageSender.sendPromise(message: closedGroupUpdateMessage)
+        // Make sure the ratchets are deleted after this message has been actually sent
+        promise.done2{
+            // Delete all ratchets (it's important that this happens after sending out the update)
+            Storage.removeAllClosedGroupRatchets(for: groupPublicKey, using: transaction)
+            // Remove the group from the user's set of public keys to poll for if the user is leaving. Otherwise generate a new ratchet and send it out to all
+            // members (minus the removed ones) and their linked devices using established channels.
+            if isUserLeaving {
+                Storage.removeClosedGroupPrivateKey(for: groupPublicKey, using: transaction)
+                //Notifiy the PN server to unsubscribe
+                LokiPushNotificationManager.operateClosedGroup(to: groupPublicKey, hexEncodedPublicKey: userPublicKey, operation: .unsubscribe)
+            } else {
+                // Establish sessions if needed
+                establishSessionsIfNeeded(with: members, using: transaction) // This internally takes care of multi device
+                // Send out the user's new ratchet to all members (minus the removed ones) and their linked devices using established channels
+                let userPublicKey = getUserHexEncodedPublicKey()
+                let userRatchet = SharedSenderKeysImplementation.shared.generateRatchet(for: groupPublicKey, senderPublicKey: userPublicKey, using: transaction)
+                let userSenderKey = ClosedGroupSenderKey(chainKey: Data(hex: userRatchet.chainKey), keyIndex: userRatchet.keyIndex, publicKey: Data(hex: userPublicKey))
+                for member in members { // This internally takes care of multi device
+                    let thread = TSContactThread.getOrCreateThread(withContactId: member, transaction: transaction)
+                    thread.save(with: transaction)
+                    let closedGroupUpdateMessageKind = ClosedGroupUpdateMessage.Kind.senderKey(groupPublicKey: Data(hex: groupPublicKey), senderKey: userSenderKey)
+                    let closedGroupUpdateMessage = ClosedGroupUpdateMessage(thread: thread, kind: closedGroupUpdateMessageKind)
+                    messageSenderJobQueue.add(message: closedGroupUpdateMessage, transaction: transaction)
+                }
             }
         }
         // Update the group
@@ -293,6 +296,8 @@ public final class ClosedGroupsProtocol : NSObject {
             Storage.removeAllClosedGroupRatchets(for: groupPublicKey, using: transaction)
             if wasUserRemoved {
                 Storage.removeClosedGroupPrivateKey(for: groupPublicKey, using: transaction)
+                //Notifiy the PN server to unsubscribe
+                LokiPushNotificationManager.operateClosedGroup(to: groupPublicKey, hexEncodedPublicKey: userPublicKey, operation: .unsubscribe)
             } else {
                 establishSessionsIfNeeded(with: members, using: transaction) // This internally takes care of multi device
                 let userRatchet = SharedSenderKeysImplementation.shared.generateRatchet(for: groupPublicKey, senderPublicKey: userPublicKey, using: transaction)

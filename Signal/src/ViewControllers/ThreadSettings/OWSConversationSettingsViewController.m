@@ -1174,10 +1174,14 @@ const CGFloat kIconViewLength = 24;
 - (void)leaveGroup
 {
     TSGroupThread *gThread = (TSGroupThread *)self.thread;
-    TSOutgoingMessage *message =
-        [TSOutgoingMessage outgoingMessageInThread:gThread groupMetaMessage:TSGroupMetaMessageQuit expiresInSeconds:0];
 
     [LKStorage writeSyncWithBlock:^(YapDatabaseReadWriteTransaction *_Nonnull transaction) {
+        if (LKClosedGroupsProtocol.isSharedSenderKeysEnabled) {
+            NSString *groupPublicKey = [LKGroupUtilities getDecodedGroupID:gThread.groupModel.groupId];
+            [LKClosedGroupsProtocol leaveGroup:groupPublicKey transaction:transaction];
+            return;
+        }
+        TSOutgoingMessage *message = [TSOutgoingMessage outgoingMessageInThread:gThread groupMetaMessage:TSGroupMetaMessageQuit expiresInSeconds:0];
         [self.messageSenderJobQueue addMessage:message transaction:transaction];
         [gThread leaveGroupWithTransaction:transaction];
     } error:nil];

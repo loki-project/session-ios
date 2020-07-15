@@ -1174,6 +1174,10 @@ const CGFloat kIconViewLength = 24;
 - (void)leaveGroup
 {
     TSGroupThread *gThread = (TSGroupThread *)self.thread;
+    // When the current user leaves a closed group
+    // set the SSK flag to false
+    gThread.usesSharedSenderKeys = false;
+    [gThread save];
 
     [LKStorage writeSyncWithBlock:^(YapDatabaseReadWriteTransaction *_Nonnull transaction) {
         if (LKClosedGroupsProtocol.isSharedSenderKeysEnabled) {

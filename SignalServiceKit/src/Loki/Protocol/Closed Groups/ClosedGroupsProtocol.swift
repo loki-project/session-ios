@@ -269,7 +269,7 @@ public final class ClosedGroupsProtocol : NSObject {
         }
         let group = thread.groupModel
         // Check that the sender is a member of the group (before the update)
-        var membersAndLinkedDevices: Set<String> = []
+        var membersAndLinkedDevices: Set<String> = Set(group.groupMemberIds)
         for member in group.groupMemberIds {
             let deviceLinks = OWSPrimaryStorage.shared().getDeviceLinks(for: member, in: transaction)
             membersAndLinkedDevices.formUnion(deviceLinks.flatMap { [ $0.master.hexEncodedPublicKey, $0.slave.hexEncodedPublicKey ] })
@@ -329,7 +329,7 @@ public final class ClosedGroupsProtocol : NSObject {
         }
         let group = groupThread.groupModel
         // Check that the requesting user is a member of the group
-        var membersAndLinkedDevices: Set<String> = []
+        var membersAndLinkedDevices: Set<String> = Set(group.groupMemberIds)
         for member in group.groupMemberIds {
             let deviceLinks = OWSPrimaryStorage.shared().getDeviceLinks(for: member, in: transaction)
             membersAndLinkedDevices.formUnion(deviceLinks.flatMap { [ $0.master.hexEncodedPublicKey, $0.slave.hexEncodedPublicKey ] })
@@ -361,7 +361,7 @@ public final class ClosedGroupsProtocol : NSObject {
             return print("[Loki] Ignoring invalid closed group update.")
         }
         // Check that the requesting user is a member of the group
-        var membersAndLinkedDevices: Set<String> = []
+        var membersAndLinkedDevices: Set<String> = Set(group.groupMemberIds)
         for member in group.groupMemberIds {
             let deviceLinks = OWSPrimaryStorage.shared().getDeviceLinks(for: member, in: transaction)
             membersAndLinkedDevices.formUnion(deviceLinks.flatMap { [ $0.master.hexEncodedPublicKey, $0.slave.hexEncodedPublicKey ] })

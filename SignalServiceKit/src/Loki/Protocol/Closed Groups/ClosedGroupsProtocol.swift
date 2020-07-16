@@ -167,7 +167,12 @@ public final class ClosedGroupsProtocol : NSObject {
         // members (minus the removed ones) and their linked devices using established channels.
         if isUserLeaving {
             Storage.removeClosedGroupPrivateKey(for: groupPublicKey, using: transaction)
-            //Notifiy the PN server to unsubscribe
+            // Send leaving message to linked device if needed
+            let thread = TSContactThread.getOrCreateThread(withContactId: userPublicKey, transaction: transaction)
+            thread.save(with: transaction)
+            let closedGroupUpdateMessageForLinkedDevice = ClosedGroupUpdateMessage(thread: thread, kind: closedGroupUpdateMessageKind)
+            SSKEnvironment.shared.messageSender.sendPromise(message: closedGroupUpdateMessageForLinkedDevice)
+            // Notifiy the PN server to unsubscribe
             LokiPushNotificationManager.operateClosedGroup(to: groupPublicKey, hexEncodedPublicKey: userPublicKey, operation: .unsubscribe)
         } else {
             // Establish sessions if needed
@@ -293,7 +298,7 @@ public final class ClosedGroupsProtocol : NSObject {
             if wasUserRemoved {
                 Storage.removeClosedGroupPrivateKey(for: groupPublicKey, using: transaction)
                 //Notifiy the PN server to unsubscribe
-                LokiPushNotificationManager.operateClosedGroup(to: groupPublicKey, hexEncodedPublicKey: userPublicKey, operation: .unsubscribe)
+                LokiPushNotificationManager.operateClosedGroup(to: groupPublicKey, hexEncodedPublicKey: getUserHexEncodedPublicKey(), operation: .unsubscribe)
             } else {
                 establishSessionsIfNeeded(with: members, using: transaction) // This internally takes care of multi device
                 let userRatchet = SharedSenderKeysImplementation.shared.generateRatchet(for: groupPublicKey, senderPublicKey: userPublicKey, using: transaction)

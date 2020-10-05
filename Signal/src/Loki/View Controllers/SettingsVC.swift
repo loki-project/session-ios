@@ -182,7 +182,9 @@ final class SettingsVC : BaseVC, AvatarViewHelperDelegate {
             getSeparator(),
             getSettingButton(withTitle: NSLocalizedString("vc_settings_privacy_button_title", comment: ""), color: Colors.text, action: #selector(showPrivacySettings)),
             getSeparator(),
-            getSettingButton(withTitle: NSLocalizedString("vc_settings_notifications_button_title", comment: ""), color: Colors.text, action: #selector(showNotificationSettings))
+            getSettingButton(withTitle: NSLocalizedString("vc_settings_notifications_button_title", comment: ""), color: Colors.text, action: #selector(showNotificationSettings)),
+            getSeparator(),
+            getSettingButton(withTitle: "Backups", color: Colors.text, action: #selector(showBackupSettings))
         ]
         let isMasterDevice = UserDefaults.standard.isMasterDevice
         if isMasterDevice {
@@ -394,7 +396,12 @@ final class SettingsVC : BaseVC, AvatarViewHelperDelegate {
         let notificationSettingsVC = NotificationSettingsViewController()
         navigationController!.pushViewController(notificationSettingsVC, animated: true)
     }
-    
+
+    @objc private func showBackupSettings() {
+        let backupSettingsVC = OWSBackupSettingsViewController()
+        navigationController!.pushViewController(backupSettingsVC, animated: true)
+    }
+
     @objc private func showLinkedDevices() {
         let deviceLinksVC = DeviceLinksVC()
         navigationController!.pushViewController(deviceLinksVC, animated: true)

@@ -19,7 +19,7 @@ import PromiseKit
     // are configured properly in the CloudKit dashboard.
     //
     // TODO: Change the record types when we ship to production.
-    static let signalBackupRecordType = "signalBackup"
+    static let signalBackupRecordType = "sessionBackup"
     static let manifestRecordNameSuffix = "manifest"
     static let payloadKey = "payload"
     static let maxRetries = 5
@@ -152,7 +152,6 @@ import PromiseKit
         let recordNames = records.map { (record) in
             return record.recordID.recordName
         }
-        Logger.verbose("recordNames[\(recordNames.count)] \(recordNames[0..<10])...")
 
         return Promise { resolver in
             let saveOperation = CKModifyRecordsOperation(recordsToSave: records, recordIDsToDelete: nil)

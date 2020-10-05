@@ -23,6 +23,7 @@
 #import "OWSAddToContactViewController.h"
 #import "OWSAnyTouchGestureRecognizer.h"
 #import "OWSAudioMessageView.h"
+#import "OWSBackupSettingsViewController.h"
 #import "OWSAudioPlayer.h"
 #import "OWSBackup.h"
 #import "OWSBackupIO.h"

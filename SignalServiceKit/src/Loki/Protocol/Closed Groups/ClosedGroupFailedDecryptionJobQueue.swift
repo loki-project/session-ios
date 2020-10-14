@@ -6,7 +6,7 @@ public final class ClosedGroupFailedDecryptionJobQueue : NSObject, JobQueue {
     public var isSetup: Bool = false
 
     public static let jobRecordLabel: String = "ClosedGroupFailedDecryptionJob"
-    public static let maxRetries: UInt = 24
+    public static let maxRetries: UInt = 12
 
     public var jobRecordLabel: String { ClosedGroupFailedDecryptionJobQueue.jobRecordLabel }
 
@@ -20,7 +20,6 @@ public final class ClosedGroupFailedDecryptionJobQueue : NSObject, JobQueue {
         return result
     }()
 
-    // MARK: Initialization
     @objc
     public override init() {
         super.init()

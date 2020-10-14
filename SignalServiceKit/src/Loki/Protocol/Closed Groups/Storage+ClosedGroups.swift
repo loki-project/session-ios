@@ -6,8 +6,21 @@ public extension Storage {
         return "LokiClosedGroupRatchetCollection.\(groupPublicKey)"
     }
 
+    internal static func getOldClosedGroupRatchetCollection(for groupPublicKey: String) -> String {
+        return "LokiOldClosedGroupRatchetCollection.\(groupPublicKey)"
+    }
+
     internal static func getClosedGroupRatchet(for groupPublicKey: String, senderPublicKey: String) -> ClosedGroupRatchet? {
         let collection = getClosedGroupRatchetCollection(for: groupPublicKey)
+        var result: ClosedGroupRatchet?
+        read { transaction in
+            result = transaction.object(forKey: senderPublicKey, inCollection: collection) as? ClosedGroupRatchet
+        }
+        return result
+    }
+
+    internal static func getOldClosedGroupRatchet(for groupPublicKey: String, senderPublicKey: String) -> ClosedGroupRatchet? {
+        let collection = getOldClosedGroupRatchetCollection(for: groupPublicKey)
         var result: ClosedGroupRatchet?
         read { transaction in
             result = transaction.object(forKey: senderPublicKey, inCollection: collection) as? ClosedGroupRatchet
@@ -18,6 +31,23 @@ public extension Storage {
     internal static func setClosedGroupRatchet(for groupPublicKey: String, senderPublicKey: String, ratchet: ClosedGroupRatchet, using transaction: YapDatabaseReadWriteTransaction) {
         let collection = getClosedGroupRatchetCollection(for: groupPublicKey)
         transaction.setObject(ratchet, forKey: senderPublicKey, inCollection: collection)
+    }
+
+    internal static func setOldClosedGroupRatchet(for groupPublicKey: String, senderPublicKey: String, ratchet: ClosedGroupRatchet, using transaction: YapDatabaseReadWriteTransaction) {
+        let collection = getOldClosedGroupRatchetCollection(for: groupPublicKey)
+        transaction.setObject(ratchet, forKey: senderPublicKey, inCollection: collection)
+    }
+
+    internal static func getAllClosedGroupRatchets(for groupPublicKey: String) -> [(senderPublicKey: String, ratchet: ClosedGroupRatchet)] {
+        let collection = getClosedGroupRatchetCollection(for: groupPublicKey)
+        var result: [(senderPublicKey: String, ratchet: ClosedGroupRatchet)] = []
+        read { transaction in
+            transaction.enumerateRows(inCollection: collection) { key, object, _, _ in
+                guard let publicKey = key as? String, let ratchet = object as? ClosedGroupRatchet else { return }
+                result.append((senderPublicKey: publicKey, ratchet: ratchet))
+            }
+        }
+        return result
     }
 
     internal static func getAllClosedGroupSenderKeys(for groupPublicKey: String) -> Set<ClosedGroupSenderKey> {

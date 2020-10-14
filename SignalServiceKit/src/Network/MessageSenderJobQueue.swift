@@ -119,7 +119,7 @@ public class MessageSenderJobQueue: NSObject, JobQueue {
         } else if let messageId = jobRecord.messageId, let fetchedMessage = TSOutgoingMessage.fetch(uniqueId: messageId, transaction: transaction) {
             message = fetchedMessage
         } else {
-            assert(jobRecord.messageId != nil)
+//            assert(jobRecord.messageId != nil)
             throw JobError.obsolete(description: "Message no longer exists.")
         }
 

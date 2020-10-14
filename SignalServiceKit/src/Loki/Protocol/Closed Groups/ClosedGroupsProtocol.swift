@@ -329,6 +329,7 @@ public final class ClosedGroupsProtocol : NSObject {
     /// kicked, or if the group admins are changed.
     private static func handleInfoMessage(_ closedGroupUpdate: SSKProtoDataMessageClosedGroupUpdate, from senderPublicKey: String,
         using transaction: YapDatabaseReadWriteTransaction) {
+        print("[Test 2] handleInfoMessage")
         // Unwrap the message
         let messageSenderJobQueue = SSKEnvironment.shared.messageSenderJobQueue
         let groupPublicKey = closedGroupUpdate.groupPublicKey.toHexString()
@@ -363,6 +364,10 @@ public final class ClosedGroupsProtocol : NSObject {
         let userPublicKey = UserDefaults.standard[.masterHexEncodedPublicKey] ?? getUserHexEncodedPublicKey()
         let wasUserRemoved = !members.contains(userPublicKey)
         if Set(members).intersection(oldMembers) != Set(oldMembers) {
+            let allOldRatchets = Storage.getAllClosedGroupRatchets(for: groupPublicKey)
+            for (senderPublicKey, oldRatchet) in allOldRatchets {
+                Storage.setOldClosedGroupRatchet(for: groupPublicKey, senderPublicKey: senderPublicKey, ratchet: oldRatchet, using: transaction)
+            }
             Storage.removeAllClosedGroupRatchets(for: groupPublicKey, using: transaction)
             if wasUserRemoved {
                 Storage.removeClosedGroupPrivateKey(for: groupPublicKey, using: transaction)
@@ -428,6 +433,7 @@ public final class ClosedGroupsProtocol : NSObject {
 
     /// Invoked upon receiving a sender key from another user.
     private static func handleSenderKeyMessage(_ closedGroupUpdate: SSKProtoDataMessageClosedGroupUpdate, from senderPublicKey: String, using transaction: YapDatabaseReadWriteTransaction) {
+        print("[Test 2] handleSenderKeyMessage")
         // Prepare
         let groupPublicKey = closedGroupUpdate.groupPublicKey.toHexString()
         guard let senderKey = closedGroupUpdate.senderKeys.first else {

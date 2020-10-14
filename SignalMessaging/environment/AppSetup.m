@@ -65,6 +65,7 @@ NS_ASSUME_NONNULL_BEGIN
         ContactsUpdater *contactsUpdater = [ContactsUpdater new];
         OWSMessageSender *messageSender = [[OWSMessageSender alloc] initWithPrimaryStorage:primaryStorage];
         SSKMessageSenderJobQueue *messageSenderJobQueue = [SSKMessageSenderJobQueue new];
+        LKClosedGroupFailedDecryptionJobQueue *closedGroupFailedDecryptionJobQueue = [LKClosedGroupFailedDecryptionJobQueue new];
         OWSProfileManager *profileManager = [[OWSProfileManager alloc] initWithPrimaryStorage:primaryStorage];
         OWSMessageManager *messageManager = [[OWSMessageManager alloc] initWithPrimaryStorage:primaryStorage];
         OWSBlockingManager *blockingManager = [[OWSBlockingManager alloc] initWithPrimaryStorage:primaryStorage];
@@ -103,6 +104,7 @@ NS_ASSUME_NONNULL_BEGIN
         [SSKEnvironment setShared:[[SSKEnvironment alloc] initWithContactsManager:contactsManager
                                                                     messageSender:messageSender
                                                             messageSenderJobQueue:messageSenderJobQueue
+                                              closedGroupFailedDecryptionJobQueue:closedGroupFailedDecryptionJobQueue
                                                                    profileManager:profileManager
                                                                    primaryStorage:primaryStorage
                                                                   contactsUpdater:contactsUpdater

@@ -442,6 +442,11 @@ NSString *const OWSMessageDecryptJobFinderExtensionGroup = @"OWSMessageProcessin
 
 @implementation OWSMessageReceiver
 
+- (dispatch_queue_t)serialQueue
+{
+    return self.processingQueue.serialQueue;
+}
+
 - (instancetype)initWithPrimaryStorage:(OWSPrimaryStorage *)primaryStorage
 {
     OWSSingletonAssert();

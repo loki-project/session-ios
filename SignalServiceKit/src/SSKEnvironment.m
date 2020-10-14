@@ -53,6 +53,7 @@ static SSKEnvironment *sharedSSKEnvironment;
 - (instancetype)initWithContactsManager:(id<ContactsManagerProtocol>)contactsManager
                           messageSender:(OWSMessageSender *)messageSender
                   messageSenderJobQueue:(SSKMessageSenderJobQueue *)messageSenderJobQueue
+    closedGroupFailedDecryptionJobQueue:(LKClosedGroupFailedDecryptionJobQueue *)closedGroupFailedDecryptionJobQueue
                          profileManager:(id<ProfileManagerProtocol>)profileManager
                          primaryStorage:(OWSPrimaryStorage *)primaryStorage
                         contactsUpdater:(ContactsUpdater *)contactsUpdater
@@ -84,6 +85,7 @@ static SSKEnvironment *sharedSSKEnvironment;
     OWSAssertDebug(contactsManager);
     OWSAssertDebug(messageSender);
     OWSAssertDebug(messageSenderJobQueue);
+    OWSAssertDebug(closedGroupFailedDecryptionJobQueue);
     OWSAssertDebug(profileManager);
     OWSAssertDebug(primaryStorage);
     OWSAssertDebug(contactsUpdater);
@@ -110,6 +112,7 @@ static SSKEnvironment *sharedSSKEnvironment;
     _contactsManager = contactsManager;
     _messageSender = messageSender;
     _messageSenderJobQueue = messageSenderJobQueue;
+    _closedGroupFailedDecryptionJobQueue = closedGroupFailedDecryptionJobQueue;
     _profileManager = profileManager;
     _primaryStorage = primaryStorage;
     _contactsUpdater = contactsUpdater;

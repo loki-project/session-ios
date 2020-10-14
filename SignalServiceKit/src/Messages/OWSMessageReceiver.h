@@ -13,6 +13,8 @@ NS_ASSUME_NONNULL_BEGIN
 // are forwarded to OWSBatchMessageProcessor.
 @interface OWSMessageReceiver : NSObject
 
+- (dispatch_queue_t)serialQueue;
+
 - (instancetype)init NS_UNAVAILABLE;
 - (instancetype)initWithPrimaryStorage:(OWSPrimaryStorage *)primaryStorage NS_DESIGNATED_INITIALIZER;
 

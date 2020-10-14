@@ -54,6 +54,7 @@ NS_ASSUME_NONNULL_BEGIN
     TSNetworkManager *networkManager = [OWSFakeNetworkManager new];
     OWSMessageSender *messageSender = [OWSFakeMessageSender new];
     SSKMessageSenderJobQueue *messageSenderJobQueue = [SSKMessageSenderJobQueue new];
+    LKClosedGroupFailedDecryptionJobQueue *closedGroupFailedDecryptionJobQueue = [LKClosedGroupFailedDecryptionJobQueue new];
 
     OWSMessageManager *messageManager = [[OWSMessageManager alloc] initWithPrimaryStorage:primaryStorage];
     OWSBlockingManager *blockingManager = [[OWSBlockingManager alloc] initWithPrimaryStorage:primaryStorage];
@@ -80,6 +81,7 @@ NS_ASSUME_NONNULL_BEGIN
     self = [super initWithContactsManager:contactsManager
                             messageSender:messageSender
                     messageSenderJobQueue:messageSenderJobQueue
+      closedGroupFailedDecryptionJobQueue:closedGroupFailedDecryptionJobQueue
                            profileManager:[OWSFakeProfileManager new]
                            primaryStorage:primaryStorage
                           contactsUpdater:[OWSFakeContactsUpdater new]

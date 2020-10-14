@@ -269,7 +269,14 @@ NSError *EnsureDecryptError(NSError *_Nullable error, NSString *fallbackErrorDes
                 [LKStorage writeSyncWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
                     NSError *error = nil;
                     NSArray *plaintextAndSenderPublicKey = [LKClosedGroupUtilities decryptEnvelope:envelope transaction:transaction error:&error];
-                    if (error != nil) { return failureBlock(); }
+                    if (error != nil) {
+                        // FIXME: It'd be nice to not do this based on the error description
+                        if ([error.description hasPrefix:@"SessionServiceKit.SharedSenderKeysImplementation.RatchetingError.loadingFailed"]) {
+                            LKClosedGroupFailedDecryptionJobQueue* closedGroupFailedDecryptionJobQueue = SSKEnvironment.shared.closedGroupFailedDecryptionJobQueue;
+                            [closedGroupFailedDecryptionJobQueue addEnvelopeData:envelopeData transaction:transaction];
+                        }
+                        return failureBlock();
+                    }
                     NSData *plaintext = plaintextAndSenderPublicKey[0];
                     NSString *senderPublicKey = plaintextAndSenderPublicKey[1];
                     SSKProtoEnvelopeBuilder *newEnvelope = [envelope asBuilder];

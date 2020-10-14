@@ -22,6 +22,7 @@ NS_ASSUME_NONNULL_BEGIN
 @class OWSPrimaryStorage;
 @class OWSReadReceiptManager;
 @class SSKMessageSenderJobQueue;
+@class LKClosedGroupFailedDecryptionJobQueue;
 @class TSAccountManager;
 @class TSNetworkManager;
 @class TSSocketManager;
@@ -41,6 +42,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (instancetype)initWithContactsManager:(id<ContactsManagerProtocol>)contactsManager
                           messageSender:(OWSMessageSender *)messageSender
                   messageSenderJobQueue:(SSKMessageSenderJobQueue *)messageSenderJobQueue
+    closedGroupFailedDecryptionJobQueue:(LKClosedGroupFailedDecryptionJobQueue *)closedGroupFailedDecryptionJobQueue
                          profileManager:(id<ProfileManagerProtocol>)profileManager
                          primaryStorage:(OWSPrimaryStorage *)primaryStorage
                         contactsUpdater:(ContactsUpdater *)contactsUpdater
@@ -78,6 +80,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, readonly) id<ContactsManagerProtocol> contactsManager;
 @property (nonatomic, readonly) OWSMessageSender *messageSender;
 @property (nonatomic, readonly) SSKMessageSenderJobQueue *messageSenderJobQueue;
+@property (nonatomic, readonly) LKClosedGroupFailedDecryptionJobQueue *closedGroupFailedDecryptionJobQueue;
 @property (nonatomic, readonly) id<ProfileManagerProtocol> profileManager;
 @property (nonatomic, readonly) OWSPrimaryStorage *primaryStorage;
 @property (nonatomic, readonly) ContactsUpdater *contactsUpdater;

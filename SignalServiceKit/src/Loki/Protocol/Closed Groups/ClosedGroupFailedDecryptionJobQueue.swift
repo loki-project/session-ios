@@ -35,7 +35,6 @@ public final class ClosedGroupFailedDecryptionJobQueue : NSObject, JobQueue {
 
     @objc(addEnvelopeData:transaction:)
     public func add(_ envelopeData: Data, transaction: YapDatabaseReadWriteTransaction) {
-        print("[Test] add(_:transaction:)")
         assert(AppReadiness.isAppReady() || CurrentAppContext().isRunningTests)
         let jobRecord: ClosedGroupFailedDecryptionJobRecord
         do {
@@ -47,7 +46,6 @@ public final class ClosedGroupFailedDecryptionJobQueue : NSObject, JobQueue {
     }
 
     public func didMarkAsReady(oldJobRecord: ClosedGroupFailedDecryptionJobRecord, transaction: YapDatabaseReadWriteTransaction) {
-        print("[Test] didMarkAsReady(oldJobRecord:transaction:)")
         // Do nothing
     }
 
@@ -76,7 +74,6 @@ public final class ClosedGroupFailedDecryptionOperation : OWSOperation, DurableO
     }
 
     override public func run() {
-        print("[Test] run")
         // FIXME: This is a lot like what happens in OWSMessageReceiver, but with a few assumptions baked in that * should * be valid
         // assuming this is only used to handle SSK ratcheting errors. In the future it'd be nice to look into merging this with the code
         // in OWSMessageReceiver to reduce code duplication.
@@ -84,7 +81,6 @@ public final class ClosedGroupFailedDecryptionOperation : OWSOperation, DurableO
         do {
             envelope = try SSKProtoEnvelope.parseData(envelopeData)
         } catch {
-            print("[Test] Couldn't parse envelope: \(error)")
             return reportError(error)
         }
         let envelopeData = self.envelopeData
@@ -103,7 +99,6 @@ public final class ClosedGroupFailedDecryptionOperation : OWSOperation, DurableO
     }
 
     override public func didSucceed() {
-        print("[Test] didSucceed")
         Storage.write { [weak self] transaction in
             guard let self = self else { return }
             self.durableOperationDelegate?.durableOperationDidSucceed(self, transaction: transaction)
@@ -111,7 +106,6 @@ public final class ClosedGroupFailedDecryptionOperation : OWSOperation, DurableO
     }
 
     override public func didReportError(_ error: Error) {
-        print("[Test] didReportError(error: \(error))")
         Storage.write { [weak self] transaction in
             guard let self = self else { return }
             self.durableOperationDelegate?.durableOperation(self, didReportError: error, transaction: transaction)
@@ -119,7 +113,6 @@ public final class ClosedGroupFailedDecryptionOperation : OWSOperation, DurableO
     }
 
     override public func didFail(error: Error) {
-        print("[Test] didFail(error: \(error))")
         Storage.write { [weak self] transaction in
             guard let self = self else { return }
             self.durableOperationDelegate?.durableOperation(self, didFailWithError: error, transaction: transaction)
@@ -127,7 +120,6 @@ public final class ClosedGroupFailedDecryptionOperation : OWSOperation, DurableO
     }
 
     override public func retryInterval() -> TimeInterval {
-        print("[Test] Retrying... (jobRecord.failureCount: \(jobRecord.failureCount))")
         // Arbitrary backoff factor...
         // With backOffFactor of 1.9
         // try  1 delay:  0.00s
@@ -144,23 +136,18 @@ public final class ClosedGroupFailedDecryptionOperation : OWSOperation, DurableO
 }
 
 public final class ClosedGroupFailedDecryptionJobRecord : SSKJobRecord {
-    @objc public var envelopeData: Data!
+    @objc public var envelopeData = Data()
 
     init(envelopeData: Data, label: String) {
-        print("[Test] ClosedGroupFailedDecryptionJobRecord.init(envelopeData: \(envelopeData), label: \(label))")
         self.envelopeData = envelopeData
         super.init(label: label)
     }
 
     public required init?(coder: NSCoder) {
-        print("[Test] ClosedGroupFailedDecryptionJobRecord.init(coder: ...)")
         super.init(coder: coder)
-        print("[Test] ClosedGroupFailedDecryptionJobRecord.init(coder: ...) → envelopeData: \(envelopeData)")
     }
 
     public required init(dictionary: [String:Any]!) throws {
-        print("[Test] ClosedGroupFailedDecryptionJobRecord.init(dictionary: \(dictionary)")
         try super.init(dictionary: dictionary)
-        print("[Test] ClosedGroupFailedDecryptionJobRecord.init(dictionary: \(dictionary) → envelopeData: \(envelopeData)")
     }
 }

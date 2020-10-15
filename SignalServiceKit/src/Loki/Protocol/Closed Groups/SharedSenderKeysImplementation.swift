@@ -68,7 +68,7 @@ public final class SharedSenderKeysImplementation : NSObject {
         let nextMessageKey = try HMAC(key: Data(hex: ratchet.chainKey).bytes, variant: .sha256).authenticate([ UInt8(1) ])
         let nextChainKey = try HMAC(key: Data(hex: ratchet.chainKey).bytes, variant: .sha256).authenticate([ UInt8(2) ])
         let nextKeyIndex = ratchet.keyIndex + 1
-        return ClosedGroupRatchet(chainKey: nextChainKey.toHexString(), keyIndex: nextKeyIndex, messageKeys: [ nextMessageKey.toHexString() ])
+        return ClosedGroupRatchet(chainKey: nextChainKey.toHexString(), keyIndex: nextKeyIndex, messageKeys: ratchet.messageKeys + [ nextMessageKey.toHexString() ])
     }
 
     /// - Note: Sync. Don't call from the main thread.
@@ -96,15 +96,14 @@ public final class SharedSenderKeysImplementation : NSObject {
         #if DEBUG
         assert(!Thread.isMainThread)
         #endif
-        let ratchetOrNil: ClosedGroupRatchet?
+        let r: ClosedGroupRatchet?
         if !isRetry {
-            ratchetOrNil = Storage.getClosedGroupRatchet(for: groupPublicKey, senderPublicKey: senderPublicKey)
+            r = Storage.getClosedGroupRatchet(for: groupPublicKey, senderPublicKey: senderPublicKey)
         } else {
-            print("[Test 2] Retrying with old ratchet")
-            ratchetOrNil = Storage.getOldClosedGroupRatchet(for: groupPublicKey, senderPublicKey: senderPublicKey)
-            print("[Test 2] Old ratchet: \(ratchetOrNil)")
+            r = Storage.getOldClosedGroupRatchet(for: groupPublicKey, senderPublicKey: senderPublicKey)
+            print("[Test] Old ratchet: \(r)")
         }
-        guard let ratchet = ratchetOrNil else {
+        guard let ratchet = r else {
             let error = RatchetingError.loadingFailed(groupPublicKey: groupPublicKey, senderPublicKey: senderPublicKey)
             print("[Loki] \(error.errorDescription!)")
             throw error
@@ -119,19 +118,19 @@ public final class SharedSenderKeysImplementation : NSObject {
             return ratchet
         } else {
             var currentKeyIndex = ratchet.keyIndex
-            var current = ratchet
-            var messageKeys: [String] = []
+            var result = ratchet
+//            var messageKeys: [String] = []
             while currentKeyIndex < targetKeyIndex {
                 do {
-                    current = try step(current)
-                    messageKeys += current.messageKeys
-                    currentKeyIndex = current.keyIndex
+                    result = try step(result)
+//                    messageKeys += result.messageKeys
+                    currentKeyIndex = result.keyIndex
                 } catch {
                     print("[Loki] Couldn't step ratchet due to error: \(error).")
                     throw error
                 }
             }
-            let result = ClosedGroupRatchet(chainKey: current.chainKey, keyIndex: current.keyIndex, messageKeys: messageKeys) // Includes any skipped message keys
+//            let result = ClosedGroupRatchet(chainKey: current.chainKey, keyIndex: current.keyIndex, messageKeys: messageKeys) // Includes any skipped message keys
             if !isRetry {
                 Storage.setClosedGroupRatchet(for: groupPublicKey, senderPublicKey: senderPublicKey, ratchet: result, using: transaction)
             }
@@ -178,12 +177,18 @@ public final class SharedSenderKeysImplementation : NSObject {
         do {
             ratchet = try stepRatchet(for: groupPublicKey, senderPublicKey: senderPublicKey, until: keyIndex, using: transaction, isRetry: isRetry)
         } catch {
-            // FIXME: It'd be cleaner to handle this in OWSMessageDecrypter (where all the other decryption errors are handled), but this was a lot more
-            // convenient because there's an easy way to get the sender public key from here.
-            if case RatchetingError.loadingFailed(_, _) = error {
-                ClosedGroupsProtocol.requestSenderKey(for: groupPublicKey, senderPublicKey: senderPublicKey, using: transaction)
+            if !isRetry {
+                print("[Test] Decryption failed; attempting to recover.")
+                return try decrypt(ivAndCiphertext, for: groupPublicKey, senderPublicKey: senderPublicKey, keyIndex: keyIndex, using: transaction, isRetry: true)
+            } else {
+                print("[Test] Recovery failed.")
+                // FIXME: It'd be cleaner to handle this in OWSMessageDecrypter (where all the other decryption errors are handled), but this was a lot more
+                // convenient because there's an easy way to get the sender public key from here.
+                if case RatchetingError.loadingFailed(_, _) = error {
+                    ClosedGroupsProtocol.requestSenderKey(for: groupPublicKey, senderPublicKey: senderPublicKey, using: transaction)
+                }
+                throw error
             }
-            throw error
         }
         let iv = ivAndCiphertext[0..<Int(SharedSenderKeysImplementation.ivSize)]
         let ciphertext = ivAndCiphertext[Int(SharedSenderKeysImplementation.ivSize)...]
@@ -193,10 +198,7 @@ public final class SharedSenderKeysImplementation : NSObject {
         }
         var result: Data?
         var error: Error?
-        var count = 0
         for messageKey in ratchet.messageKeys {
-            print("[Test 2] Loop \(count).")
-            count += 1
             do {
                 let aes = try AES(key: Data(hex: messageKey).bytes, blockMode: gcm, padding: .noPadding)
                 return try Data(try aes.decrypt(ciphertext.bytes))
@@ -206,8 +208,10 @@ public final class SharedSenderKeysImplementation : NSObject {
             }
         }
         if !isRetry {
+            print("[Test] Decryption failed; attempting to recover.")
             return try decrypt(ivAndCiphertext, for: groupPublicKey, senderPublicKey: senderPublicKey, keyIndex: keyIndex, using: transaction, isRetry: true)
         } else {
+            print("[Test] Recovery failed.")
             ClosedGroupsProtocol.requestSenderKey(for: groupPublicKey, senderPublicKey: senderPublicKey, using: transaction)
             throw error ?? RatchetingError.generic
         }

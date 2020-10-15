@@ -133,7 +133,7 @@ public final class ClosedGroupsProtocol : NSObject {
             promise.done {
                 try! Storage.writeSync { transaction in
                     let allOldRatchets = Storage.getAllClosedGroupRatchets(for: groupPublicKey)
-                    print("[Test 2] Storing old ratchets: \(allOldRatchets.count)")
+                    print("[Test] Storing old ratchets: \(allOldRatchets.count)")
                     for (senderPublicKey, oldRatchet) in allOldRatchets {
                         Storage.setOldClosedGroupRatchet(for: groupPublicKey, senderPublicKey: senderPublicKey, ratchet: oldRatchet, using: transaction)
                     }
@@ -369,7 +369,7 @@ public final class ClosedGroupsProtocol : NSObject {
         let wasUserRemoved = !members.contains(userPublicKey)
         if Set(members).intersection(oldMembers) != Set(oldMembers) {
             let allOldRatchets = Storage.getAllClosedGroupRatchets(for: groupPublicKey)
-            print("[Test 2] Storing old ratchets: \(allOldRatchets.count)")
+            print("[Test] Storing old ratchets: \(allOldRatchets.count)")
             for (senderPublicKey, oldRatchet) in allOldRatchets {
                 Storage.setOldClosedGroupRatchet(for: groupPublicKey, senderPublicKey: senderPublicKey, ratchet: oldRatchet, using: transaction)
             }
@@ -438,7 +438,6 @@ public final class ClosedGroupsProtocol : NSObject {
 
     /// Invoked upon receiving a sender key from another user.
     private static func handleSenderKeyMessage(_ closedGroupUpdate: SSKProtoDataMessageClosedGroupUpdate, from senderPublicKey: String, using transaction: YapDatabaseReadWriteTransaction) {
-        print("[Test 2] Received a sender key from: \(senderPublicKey).")
         // Prepare
         let groupPublicKey = closedGroupUpdate.groupPublicKey.toHexString()
         guard let senderKey = closedGroupUpdate.senderKeys.first else {

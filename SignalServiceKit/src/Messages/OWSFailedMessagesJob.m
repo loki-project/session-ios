@@ -80,7 +80,7 @@ static NSString *const OWSFailedMessagesJobMessageStateIndex = @"index_outoing_m
 {
     __block uint count = 0;
 
-    [LKStorage writeSyncWithBlock:^(YapDatabaseReadWriteTransaction *_Nonnull transaction) {
+    [LKStorage writeWithBlock:^(YapDatabaseReadWriteTransaction *_Nonnull transaction) {
         [self enumerateAttemptingOutMessagesWithBlock:^(TSOutgoingMessage *message) {
             // sanity check
             OWSAssertDebug(message.messageState == TSOutgoingMessageStateSending);
@@ -96,7 +96,7 @@ static NSString *const OWSFailedMessagesJobMessageStateIndex = @"index_outoing_m
             count++;
         }
                                           transaction:transaction];
-    } error:nil];
+    }];
 
     OWSLogDebug(@"Marked %u messages as unsent", count);
 }

@@ -132,6 +132,11 @@ public final class ClosedGroupsProtocol : NSObject {
             when(resolved: promises).done2 { _ in seal.fulfill(()) }.catch2 { seal.reject($0) }
             promise.done {
                 try! Storage.writeSync { transaction in
+                    let allOldRatchets = Storage.getAllClosedGroupRatchets(for: groupPublicKey)
+                    print("[Test 2] Storing old ratchets: \(allOldRatchets.count)")
+                    for (senderPublicKey, oldRatchet) in allOldRatchets {
+                        Storage.setOldClosedGroupRatchet(for: groupPublicKey, senderPublicKey: senderPublicKey, ratchet: oldRatchet, using: transaction)
+                    }
                     // Delete all ratchets (it's important that this happens * after * sending out the update)
                     Storage.removeAllClosedGroupRatchets(for: groupPublicKey, using: transaction)
                     // Remove the group from the user's set of public keys to poll for if the user is leaving. Otherwise generate a new ratchet and
@@ -329,7 +334,6 @@ public final class ClosedGroupsProtocol : NSObject {
     /// kicked, or if the group admins are changed.
     private static func handleInfoMessage(_ closedGroupUpdate: SSKProtoDataMessageClosedGroupUpdate, from senderPublicKey: String,
         using transaction: YapDatabaseReadWriteTransaction) {
-        print("[Test 2] handleInfoMessage")
         // Unwrap the message
         let messageSenderJobQueue = SSKEnvironment.shared.messageSenderJobQueue
         let groupPublicKey = closedGroupUpdate.groupPublicKey.toHexString()
@@ -365,6 +369,7 @@ public final class ClosedGroupsProtocol : NSObject {
         let wasUserRemoved = !members.contains(userPublicKey)
         if Set(members).intersection(oldMembers) != Set(oldMembers) {
             let allOldRatchets = Storage.getAllClosedGroupRatchets(for: groupPublicKey)
+            print("[Test 2] Storing old ratchets: \(allOldRatchets.count)")
             for (senderPublicKey, oldRatchet) in allOldRatchets {
                 Storage.setOldClosedGroupRatchet(for: groupPublicKey, senderPublicKey: senderPublicKey, ratchet: oldRatchet, using: transaction)
             }
@@ -433,7 +438,7 @@ public final class ClosedGroupsProtocol : NSObject {
 
     /// Invoked upon receiving a sender key from another user.
     private static func handleSenderKeyMessage(_ closedGroupUpdate: SSKProtoDataMessageClosedGroupUpdate, from senderPublicKey: String, using transaction: YapDatabaseReadWriteTransaction) {
-        print("[Test 2] handleSenderKeyMessage")
+        print("[Test 2] Received a sender key from: \(senderPublicKey).")
         // Prepare
         let groupPublicKey = closedGroupUpdate.groupPublicKey.toHexString()
         guard let senderKey = closedGroupUpdate.senderKeys.first else {

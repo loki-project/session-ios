@@ -192,21 +192,24 @@ public final class SharedSenderKeysImplementation : NSObject {
             throw RatchetingError.messageKeyMissing(targetKeyIndex: keyIndex, groupPublicKey: groupPublicKey, senderPublicKey: senderPublicKey)
         }
         var result: Data?
-        var errorOrNil: Error?
+        var error: Error?
+        var count = 0
         for messageKey in ratchet.messageKeys {
+            print("[Test 2] Loop \(count).")
+            count += 1
             do {
                 let aes = try AES(key: Data(hex: messageKey).bytes, blockMode: gcm, padding: .noPadding)
                 return try Data(try aes.decrypt(ciphertext.bytes))
-            } catch {
-                errorOrNil = error
+            } catch (let e) {
+                error = e
                 // Try the next message key
             }
         }
-        if isRetry {
-            ClosedGroupsProtocol.requestSenderKey(for: groupPublicKey, senderPublicKey: senderPublicKey, using: transaction)
-            throw errorOrNil ?? RatchetingError.generic
-        } else {
+        if !isRetry {
             return try decrypt(ivAndCiphertext, for: groupPublicKey, senderPublicKey: senderPublicKey, keyIndex: keyIndex, using: transaction, isRetry: true)
+        } else {
+            ClosedGroupsProtocol.requestSenderKey(for: groupPublicKey, senderPublicKey: senderPublicKey, using: transaction)
+            throw error ?? RatchetingError.generic
         }
     }
 

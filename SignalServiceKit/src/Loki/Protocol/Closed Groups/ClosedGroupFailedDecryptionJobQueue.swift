@@ -6,7 +6,7 @@ public final class ClosedGroupFailedDecryptionJobQueue : NSObject, JobQueue {
     public var isSetup: Bool = false
 
     public static let jobRecordLabel: String = "ClosedGroupFailedDecryptionJob"
-    public static let maxRetries: UInt = 12
+    public static let maxRetries: UInt = 24
 
     public var jobRecordLabel: String { ClosedGroupFailedDecryptionJobQueue.jobRecordLabel }
 
@@ -89,12 +89,10 @@ public final class ClosedGroupFailedDecryptionOperation : OWSOperation, DurableO
         }
         let envelopeData = self.envelopeData
         SSKEnvironment.shared.messageReceiver.serialQueue().async { [weak self] in
-            SSKEnvironment.shared.messageDecrypter.decryptEnvelope(envelope, envelopeData: envelopeData, successBlock: { result, _ in
+            SSKEnvironment.shared.messageDecrypter.decryptEnvelope(envelope, envelopeData: envelopeData, successBlock: { result, transaction in
                 do {
-                    try Storage.writeSync { transaction in
-                        SSKEnvironment.shared.batchMessageProcessor.enqueueEnvelopeData(result.envelopeData, plaintextData: result.plaintextData, wasReceivedByUD: true, transaction: transaction)
-                        self?.reportSuccess()
-                    }
+                    SSKEnvironment.shared.batchMessageProcessor.enqueueEnvelopeData(result.envelopeData, plaintextData: result.plaintextData, wasReceivedByUD: true, transaction: transaction)
+                    self?.reportSuccess()
                 } catch {
                     self?.reportError(error)
                 }
@@ -106,7 +104,7 @@ public final class ClosedGroupFailedDecryptionOperation : OWSOperation, DurableO
 
     override public func didSucceed() {
         print("[Test] didSucceed")
-        try! Storage.writeSync { [weak self] transaction in
+        Storage.write { [weak self] transaction in
             guard let self = self else { return }
             self.durableOperationDelegate?.durableOperationDidSucceed(self, transaction: transaction)
         }
@@ -114,7 +112,7 @@ public final class ClosedGroupFailedDecryptionOperation : OWSOperation, DurableO
 
     override public func didReportError(_ error: Error) {
         print("[Test] didReportError(error: \(error))")
-        try! Storage.writeSync { [weak self] transaction in
+        Storage.write { [weak self] transaction in
             guard let self = self else { return }
             self.durableOperationDelegate?.durableOperation(self, didReportError: error, transaction: transaction)
         }
@@ -122,7 +120,7 @@ public final class ClosedGroupFailedDecryptionOperation : OWSOperation, DurableO
 
     override public func didFail(error: Error) {
         print("[Test] didFail(error: \(error))")
-        try! Storage.writeSync { [weak self] transaction in
+        Storage.write { [weak self] transaction in
             guard let self = self else { return }
             self.durableOperationDelegate?.durableOperation(self, didFailWithError: error, transaction: transaction)
         }

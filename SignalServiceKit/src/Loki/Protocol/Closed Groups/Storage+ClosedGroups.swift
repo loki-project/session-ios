@@ -51,16 +51,9 @@ public extension Storage {
     }
 
     internal static func getAllClosedGroupSenderKeys(for groupPublicKey: String) -> Set<ClosedGroupSenderKey> {
-        let collection = getClosedGroupRatchetCollection(for: groupPublicKey)
-        var result: Set<ClosedGroupSenderKey> = []
-        read { transaction in
-            transaction.enumerateRows(inCollection: collection) { key, object, _, _ in
-                guard let publicKey = key as? String, let ratchet = object as? ClosedGroupRatchet else { return }
-                let senderKey = ClosedGroupSenderKey(chainKey: Data(hex: ratchet.chainKey), keyIndex: ratchet.keyIndex, publicKey: Data(hex: publicKey))
-                result.insert(senderKey)
-            }
-        }
-        return result
+        return Set(getAllClosedGroupRatchets(for: groupPublicKey).map { publicKey, ratchet in
+            ClosedGroupSenderKey(chainKey: Data(hex: ratchet.chainKey), keyIndex: ratchet.keyIndex, publicKey: Data(hex: publicKey))
+        })
     }
 
     internal static func removeAllClosedGroupRatchets(for groupPublicKey: String, using transaction: YapDatabaseReadWriteTransaction) {

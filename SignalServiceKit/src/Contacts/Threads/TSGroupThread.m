@@ -10,6 +10,7 @@
 #import <YapDatabase/YapDatabaseTransaction.h>
 #import <SessionServiceKit/SessionServiceKit-Swift.h>
 #import "OWSPrimaryStorage.h"
+#import <SessionCoreKit/NSDate+OWS.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -38,6 +39,7 @@ NSString *const TSGroupThread_NotificationKey_UniqueId = @"TSGroupThread_Notific
     }
 
     _groupModel = groupModel;
+    _createdAt = [NSDate ows_millisecondTimeStamp];
 
     return self;
 }
@@ -61,6 +63,8 @@ NSString *const TSGroupThread_NotificationKey_UniqueId = @"TSGroupThread_Notific
     if (!self) {
         return self;
     }
+    
+    _createdAt = [NSDate ows_millisecondTimeStamp];
 
     return self;
 }

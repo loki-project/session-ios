@@ -255,7 +255,7 @@ public final class ClosedGroupsProtocol : NSObject {
         guard let closedGroupUpdate = dataMessage.closedGroupUpdate, isValid(closedGroupUpdate) else { return }
         switch closedGroupUpdate.type {
         case .new: handleNewGroupMessage(closedGroupUpdate, using: transaction)
-        case .info: handleInfoMessage(closedGroupUpdate, from: publicKey, using: transaction)
+        case .info: handleInfoMessage(closedGroupUpdate, from: publicKey, at: dataMessage.timestamp, using: transaction)
         case .senderKeyRequest: handleSenderKeyRequestMessage(closedGroupUpdate, from: publicKey, using: transaction)
         case .senderKey: handleSenderKeyMessage(closedGroupUpdate, from: publicKey, using: transaction)
         }
@@ -332,7 +332,7 @@ public final class ClosedGroupsProtocol : NSObject {
 
     /// Invoked upon receiving a group update. A group update is sent out when a group's name is changed, when new users are added, when users leave or are
     /// kicked, or if the group admins are changed.
-    private static func handleInfoMessage(_ closedGroupUpdate: SSKProtoDataMessageClosedGroupUpdate, from senderPublicKey: String,
+    private static func handleInfoMessage(_ closedGroupUpdate: SSKProtoDataMessageClosedGroupUpdate, from senderPublicKey: String, at timestamp: UInt64,
         using transaction: YapDatabaseReadWriteTransaction) {
         // Unwrap the message
         let messageSenderJobQueue = SSKEnvironment.shared.messageSenderJobQueue
@@ -345,6 +345,9 @@ public final class ClosedGroupsProtocol : NSObject {
         let groupID = LKGroupUtilities.getEncodedClosedGroupIDAsData(groupPublicKey)
         guard let thread = TSGroupThread.fetch(uniqueId: TSGroupThread.threadId(fromGroupId: groupID), transaction: transaction) else {
             return print("[Loki] Ignoring closed group info message for nonexistent group.")
+        }
+        guard thread.createdAt < timestamp else {
+            return print("[Loki] Ignoring closed group info message before the thread was created.")
         }
         let group = thread.groupModel
         // Check that the sender is a member of the group (before the update)

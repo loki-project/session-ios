@@ -25,8 +25,15 @@ extension AppDelegate : OpenGroupAPIDelegate {
                     while sanitizedServerURL.hasSuffix("/") { sanitizedServerURL.removeLast(1) }
                     while sanitizedProfilePictureURL.hasPrefix("/") { sanitizedProfilePictureURL.removeFirst(1) }
                     let url = "\(sanitizedServerURL)/\(sanitizedProfilePictureURL)"
-                    FileServerAPI.downloadAttachment(from: url).map2 { data in
-                        let attachmentStream = TSAttachmentStream(contentType: OWSMimeTypeImageJpeg, byteCount: UInt32(data.count), sourceFilename: nil, caption: nil, albumMessageId: nil)
+                    FileServerAPI.downloadAttachment(from: url).map2 { srcData in
+                        let attachmentStream: TSAttachmentStream
+                        let data: Data
+                        if let srcImage = UIImage(data: srcData), let dstData = srcImage.jpegData(compressionQuality: 0.8) {
+                            data = dstData
+                        } else {
+                            data = srcData
+                        }
+                        attachmentStream = TSAttachmentStream(contentType: OWSMimeTypeImageJpeg, byteCount: UInt32(data.count), sourceFilename: nil, caption: nil, albumMessageId: nil)
                         try attachmentStream.write(data)
                         groupThread.updateAvatar(with: attachmentStream)
                     }

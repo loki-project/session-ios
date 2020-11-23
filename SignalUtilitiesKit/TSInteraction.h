@@ -42,6 +42,8 @@ NSString *NSStringFromOWSInteractionType(OWSInteractionType value);
 @property (nonatomic, readonly) BOOL shouldUseServerTime;
 /// Used for public chats where a message sent from a slave device is interpreted as having been sent from the master device.
 @property (nonatomic) NSString *actualSenderHexEncodedPublicKey;
+// Push notifications
+@property (nonatomic) BOOL hasAttachmentsInNSE;
 
 - (void)setServerTimestampToReceivedTimestamp:(uint64_t)receivedAtTimestamp;
 

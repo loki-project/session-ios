@@ -41,6 +41,7 @@ NSString *const kSyncMessageFileExtension = @"bin";
             @"video/quicktime" : @"mov",
             @"video/x-m4v" : @"m4v",
             @"video/mpeg" : @"mpg",
+            @"video/webm" : @"webm",
         };
     });
     return result;
@@ -68,6 +69,8 @@ NSString *const kSyncMessageFileExtension = @"bin";
             @"audio/x-aiff" : @"aiff",
             @"audio/3gpp2" : @"3g2",
             @"audio/3gpp" : @"3gp",
+            @"audio/opus" : @"opus",
+            @"audio/ogg" : @"ogg",
         };
     });
     return result;

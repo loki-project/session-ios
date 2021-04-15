@@ -7,6 +7,7 @@
 #import <AVFoundation/AVFoundation.h>
 #import <SessionUtilitiesKit/SessionUtilitiesKit.h>
 #import <SessionMessagingKit/SessionMessagingKit-Swift.h>
+#import <MobileVLCKit/VLCMediaPlayer.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -40,10 +41,10 @@ NS_ASSUME_NONNULL_BEGIN
 
 #pragma mark -
 
-@interface OWSAudioPlayer () <AVAudioPlayerDelegate>
+@interface OWSAudioPlayer () <VLCMediaPlayerDelegate>
 
 @property (nonatomic, readonly) NSURL *mediaUrl;
-@property (nonatomic, nullable) AVAudioPlayer *audioPlayer;
+@property (nonatomic, nullable) VLCMediaPlayer *audioPlayer;
 @property (nonatomic, nullable) NSTimer *audioPlayerPoller;
 @property (nonatomic, readonly) OWSAudioActivity *audioActivity;
 
@@ -127,23 +128,9 @@ NS_ASSUME_NONNULL_BEGIN
     [[AVAudioSession sharedInstance] setCategory: AVAudioSessionCategoryPlayback error: nil];
 
     if (!self.audioPlayer) {
-        NSError *error;
-        self.audioPlayer = [[AVAudioPlayer alloc] initWithContentsOfURL:self.mediaUrl error:&error];
-        self.audioPlayer.enableRate = YES;
-        if (error) {
-            [self stop];
-
-            if ([error.domain isEqualToString:NSOSStatusErrorDomain]
-                && (error.code == kAudioFileInvalidFileError || error.code == kAudioFileStreamError_InvalidFile)) {
-                [self.delegate showInvalidAudioFileAlert];
-            }
-
-            return;
-        }
+        self.audioPlayer = [[VLCMediaPlayer alloc] initWithOptions:nil];
+        self.audioPlayer.media = [VLCMedia mediaWithURL:self.mediaUrl];
         self.audioPlayer.delegate = self;
-        if (self.isLooping) {
-            self.audioPlayer.numberOfLoops = -1;
-        }
     }
 
     [self.audioPlayer play];
@@ -160,7 +147,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)setCurrentTime:(NSTimeInterval)currentTime
 {
-    [self.audioPlayer setCurrentTime:currentTime];
+    [self.audioPlayer setPosition:(float)currentTime/(self.audioPlayer.media.length.intValue/1000)];
 }
 
 - (float)getPlaybackRate
@@ -178,7 +165,9 @@ NS_ASSUME_NONNULL_BEGIN
     self.delegate.audioPlaybackState = AudioPlaybackState_Paused;
     [self.audioPlayer pause];
     [self.audioPlayerPoller invalidate];
-    [self.delegate setAudioProgress:(CGFloat)[self.audioPlayer currentTime] duration:(CGFloat)[self.audioPlayer duration]];
+    int progressSeconds = self.audioPlayer.time.intValue/1000;
+    int durationSeconds = self.audioPlayer.media.length.intValue/1000;
+    [self.delegate setAudioProgress:(CGFloat)progressSeconds duration:(CGFloat)durationSeconds];
 
     [self endAudioActivities];
     [DeviceSleepManager.sharedInstance removeBlockWithBlockObject:self];
@@ -187,12 +176,15 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)stop
 {
     self.delegate.audioPlaybackState = AudioPlaybackState_Stopped;
-    [self.audioPlayer pause];
+    [self.audioPlayer stop];
     [self.audioPlayerPoller invalidate];
     [self.delegate setAudioProgress:0 duration:0];
 
     [self endAudioActivities];
     [DeviceSleepManager.sharedInstance removeBlockWithBlockObject:self];
+    if (self.isLooping) {
+        [self play];
+    }
 }
 
 - (void)endAudioActivities
@@ -213,13 +205,24 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)audioPlayerUpdated:(NSTimer *)timer
 {
-    [self.delegate setAudioProgress:(CGFloat)[self.audioPlayer currentTime] duration:(CGFloat)[self.audioPlayer duration]];
+    int progressSeconds = self.audioPlayer.time.intValue/1000;
+    int durationSeconds = self.audioPlayer.media.length.intValue/1000;
+    [self.delegate setAudioProgress:(CGFloat)progressSeconds duration:(CGFloat)durationSeconds];
 }
 
 - (void)audioPlayerDidFinishPlaying:(AVAudioPlayer *)player successfully:(BOOL)flag
 {
     [self stop];
     [self.delegate audioPlayerDidFinishPlaying:self successfully:flag];
+}
+
+- (void)mediaPlayerStateChanged:(NSNotification *)aNotification
+{
+    VLCMediaPlayerState currentState = [self.audioPlayer state];
+    if (currentState == VLCMediaPlayerStateEnded) {
+        [self stop];
+        [self.delegate audioPlayerDidFinishPlaying:self successfully:true];
+    }
 }
 
 @end

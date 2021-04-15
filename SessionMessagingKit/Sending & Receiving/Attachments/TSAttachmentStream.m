@@ -6,6 +6,7 @@
 #import <YapDatabase/YapDatabase.h>
 #import <SessionUtilitiesKit/SessionUtilitiesKit.h>
 #import <SessionMessagingKit/SessionMessagingKit-Swift.h>
+#import <MobileVLCKit/VLCMediaPlayer.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -516,18 +517,12 @@ typedef void (^OWSLoadedThumbnailSuccess)(OWSLoadedThumbnail *loadedThumbnail);
 
 - (CGFloat)calculateAudioDurationSeconds
 {
-    NSError *error;
-    AVAudioPlayer *audioPlayer = [[AVAudioPlayer alloc] initWithContentsOfURL:self.originalMediaURL error:&error];
-    if (error && [error.domain isEqualToString:NSOSStatusErrorDomain]
-        && (error.code == kAudioFileInvalidFileError || error.code == kAudioFileStreamError_InvalidFile)) {
-        // Ignore "invalid audio file" errors.
-        return 0.f;
-    }
-    if (!error) {
-        return (CGFloat)[audioPlayer duration];
-    } else {
-        return 0;
-    }
+    VLCMediaPlayer *audioPlayer = [[VLCMediaPlayer alloc] initWithOptions:nil];
+    audioPlayer.media = [VLCMedia mediaWithURL:self.originalMediaURL];
+    // This will block for at most 5s.
+    // Just need to see if it is too long to wait.
+    VLCTime *length = [audioPlayer.media lengthWaitUntilDate:[NSDate dateWithTimeIntervalSinceNow:5.0]];
+    return length.intValue/1000;
 }
 
 - (CGFloat)audioDurationSeconds

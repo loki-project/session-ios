@@ -26,6 +26,7 @@ PODS:
   - Mantle (2.1.0):
     - Mantle/extobjc (= 2.1.0)
   - Mantle/extobjc (2.1.0)
+  - MobileVLCKit (3.3.15)
   - NVActivityIndicatorView (5.0.1):
     - NVActivityIndicatorView/Base (= 5.0.1)
   - NVActivityIndicatorView/Base (5.0.1)
@@ -127,6 +128,7 @@ DEPENDENCIES:
   - GRKOpenSSLFramework
   - HKDFKit
   - Mantle (from `https://github.com/signalapp/Mantle`, branch `signal-master`)
+  - MobileVLCKit (~> 3.3.0)
   - NVActivityIndicatorView
   - PromiseKit
   - PureLayout (~> 3.1.4)
@@ -146,6 +148,7 @@ SPEC REPOS:
     - CryptoSwift
     - GRKOpenSSLFramework
     - HKDFKit
+    - MobileVLCKit
     - NVActivityIndicatorView
     - PromiseKit
     - PureLayout
@@ -195,6 +198,7 @@ SPEC CHECKSUMS:
   GRKOpenSSLFramework: dc635b0a9d4cd8af2a9ff80a61e779e21b69dfd8
   HKDFKit: c058305d6f64b84f28c50bd7aa89574625bcb62a
   Mantle: 2fa750afa478cd625a94230fbf1c13462f29395b
+  MobileVLCKit: 9a04c9fa19e35c376ddf59425dd82e397d5899ad
   NVActivityIndicatorView: 738e843cb8924e9e4fc3e559d0728031624bf860
   PromiseKit: 28fda91c973cc377875d8c0ea4f973013c05b6db
   PureLayout: bd3c4ec3a3819ad387c99ebb72c6b129c3ed4d2d
@@ -208,6 +212,6 @@ SPEC CHECKSUMS:
   YYImage: 6db68da66f20d9f169ceb94dfb9947c3867b9665
   ZXingObjC: fdbb269f25dd2032da343e06f10224d62f537bdb
 
-PODFILE CHECKSUM: 523f27e57b63690fcbf629f49664dabac3876654
+PODFILE CHECKSUM: c00e96331fff75c3fa9632c09dea8b7fd37314b2
 
 COCOAPODS: 1.10.1

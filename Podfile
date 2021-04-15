@@ -50,6 +50,7 @@ target 'SignalUtilitiesKit' do
   pod 'SwiftProtobuf', '~> 1.5.0', :inhibit_warnings => true
   pod 'YapDatabase/SQLCipher', :git => 'https://github.com/loki-project/session-ios-yap-database.git', branch: 'signal-release', :inhibit_warnings => true
   pod 'YYImage', git: 'https://github.com/signalapp/YYImage', :inhibit_warnings => true
+  pod 'MobileVLCKit', '~>3.3.0', :inhibit_warnings => true
 end
 
 target 'SessionUIKit' do
@@ -70,6 +71,7 @@ target 'SessionMessagingKit' do
   pod 'Sodium', '~> 0.8.0', :inhibit_warnings => true
   pod 'SwiftProtobuf', '~> 1.5.0', :inhibit_warnings => true
   pod 'YapDatabase/SQLCipher', :git => 'https://github.com/loki-project/session-ios-yap-database.git', branch: 'signal-release', :inhibit_warnings => true
+  pod 'MobileVLCKit', '~>3.3.0', :inhibit_warnings => true
 end
 
 target 'SessionSnodeKit' do

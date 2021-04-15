@@ -149,6 +149,16 @@
 		76EB054018170B33006006FC /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 76EB03C318170B33006006FC /* AppDelegate.m */; };
 		7BC01A3E241F40AB00BC7C55 /* NotificationServiceExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BC01A3D241F40AB00BC7C55 /* NotificationServiceExtension.swift */; };
 		7BC01A42241F40AB00BC7C55 /* SessionNotificationServiceExtension.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = 7BC01A3B241F40AB00BC7C55 /* SessionNotificationServiceExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		7BC299EE2627BC0300246C8E /* CoreFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E1A0AD8B16E13FDD0071E604 /* CoreFoundation.framework */; };
+		7BC299EF2627BC1200246C8E /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D221A091169C9E5E00537ABF /* CoreGraphics.framework */; };
+		7BC299F12627BC2E00246C8E /* CoreText.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7BC299F02627BC2E00246C8E /* CoreText.framework */; };
+		7BC299F32627BC3700246C8E /* CoreVideo.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7BC299F22627BC3600246C8E /* CoreVideo.framework */; };
+		7BC299F52627BC4000246C8E /* libbz2.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 7BC299F42627BC4000246C8E /* libbz2.tbd */; };
+		7BC299FE2627BC4B00246C8E /* libc++.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 7BC299FD2627BC4B00246C8E /* libc++.tbd */; };
+		7BC29A072627BC5300246C8E /* libiconv.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 7BC29A062627BC5300246C8E /* libiconv.tbd */; };
+		7BC29A102627BC5B00246C8E /* libxml2.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 7BC29A0F2627BC5B00246C8E /* libxml2.tbd */; };
+		7BC29A192627BC6300246C8E /* OpenGLES.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7BC29A182627BC6300246C8E /* OpenGLES.framework */; };
+		7BC29A1B2627BC8100246C8E /* VideoToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7BC29A1A2627BC8100246C8E /* VideoToolbox.framework */; };
 		7BDCFC08242186E700641C39 /* NotificationServiceExtensionContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BDCFC07242186E700641C39 /* NotificationServiceExtensionContext.swift */; };
 		7BDCFC0B2421EB7600641C39 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = B6F509951AA53F760068F56A /* Localizable.strings */; };
 		945AA2B82B621254F69FA9E8 /* Pods_SessionUtilitiesKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9117261809D69B3D7C26B8F1 /* Pods_SessionUtilitiesKit.framework */; };
@@ -1151,6 +1161,14 @@
 		7BC01A3B241F40AB00BC7C55 /* SessionNotificationServiceExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = SessionNotificationServiceExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		7BC01A3D241F40AB00BC7C55 /* NotificationServiceExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationServiceExtension.swift; sourceTree = "<group>"; };
 		7BC01A3F241F40AB00BC7C55 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		7BC299F02627BC2E00246C8E /* CoreText.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreText.framework; path = System/Library/Frameworks/CoreText.framework; sourceTree = SDKROOT; };
+		7BC299F22627BC3600246C8E /* CoreVideo.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreVideo.framework; path = System/Library/Frameworks/CoreVideo.framework; sourceTree = SDKROOT; };
+		7BC299F42627BC4000246C8E /* libbz2.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libbz2.tbd; path = usr/lib/libbz2.tbd; sourceTree = SDKROOT; };
+		7BC299FD2627BC4B00246C8E /* libc++.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = "libc++.tbd"; path = "usr/lib/libc++.tbd"; sourceTree = SDKROOT; };
+		7BC29A062627BC5300246C8E /* libiconv.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libiconv.tbd; path = usr/lib/libiconv.tbd; sourceTree = SDKROOT; };
+		7BC29A0F2627BC5B00246C8E /* libxml2.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libxml2.tbd; path = usr/lib/libxml2.tbd; sourceTree = SDKROOT; };
+		7BC29A182627BC6300246C8E /* OpenGLES.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGLES.framework; path = System/Library/Frameworks/OpenGLES.framework; sourceTree = SDKROOT; };
+		7BC29A1A2627BC8100246C8E /* VideoToolbox.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = VideoToolbox.framework; path = System/Library/Frameworks/VideoToolbox.framework; sourceTree = SDKROOT; };
 		7BDCFC0424206E7300641C39 /* SessionNotificationServiceExtension.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = SessionNotificationServiceExtension.entitlements; sourceTree = "<group>"; };
 		7BDCFC07242186E700641C39 /* NotificationServiceExtensionContext.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NotificationServiceExtensionContext.swift; sourceTree = "<group>"; };
 		7DD180F770F8518B4E8796F2 /* Pods-SessionUtilitiesKit.app store release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-SessionUtilitiesKit.app store release.xcconfig"; path = "Pods/Target Support Files/Pods-SessionUtilitiesKit/Pods-SessionUtilitiesKit.app store release.xcconfig"; sourceTree = "<group>"; };
@@ -1925,6 +1943,19 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				7BC29A1B2627BC8100246C8E /* VideoToolbox.framework in Frameworks */,
+				A163E8AB16F3F6AA0094D68B /* Security.framework in Frameworks */,
+				A11CD70D17FA230600A2D1B1 /* QuartzCore.framework in Frameworks */,
+				7BC29A192627BC6300246C8E /* OpenGLES.framework in Frameworks */,
+				7BC29A102627BC5B00246C8E /* libxml2.tbd in Frameworks */,
+				7BC29A072627BC5300246C8E /* libiconv.tbd in Frameworks */,
+				7BC299FE2627BC4B00246C8E /* libc++.tbd in Frameworks */,
+				7BC299F52627BC4000246C8E /* libbz2.tbd in Frameworks */,
+				7BC299F32627BC3700246C8E /* CoreVideo.framework in Frameworks */,
+				7BC299F12627BC2E00246C8E /* CoreText.framework in Frameworks */,
+				FCB11D8C1A129A76002F93FB /* CoreMedia.framework in Frameworks */,
+				7BC299EF2627BC1200246C8E /* CoreGraphics.framework in Frameworks */,
+				7BC299EE2627BC0300246C8E /* CoreFoundation.framework in Frameworks */,
 				B8FF8DAE25C0D00F004D1F22 /* SessionMessagingKit.framework in Frameworks */,
 				B8FF8DAF25C0D00F004D1F22 /* SessionUtilitiesKit.framework in Frameworks */,
 				C37F54DC255BB84A002AEA92 /* SessionSnodeKit.framework in Frameworks */,
@@ -1938,14 +1969,11 @@
 				45BD60821DE9547E00A8F436 /* Contacts.framework in Frameworks */,
 				B6FE7EB71ADD62FA00A6D22F /* PushKit.framework in Frameworks */,
 				FC3BD9881A30A790005B96BB /* Social.framework in Frameworks */,
-				FCB11D8C1A129A76002F93FB /* CoreMedia.framework in Frameworks */,
 				70377AAB1918450100CAF501 /* MobileCoreServices.framework in Frameworks */,
 				B9EB5ABD1884C002007CBB57 /* MessageUI.framework in Frameworks */,
 				3496956021A2FC8100DCFE74 /* CloudKit.framework in Frameworks */,
 				76C87F19181EFCE600C4ACAB /* MediaPlayer.framework in Frameworks */,
 				768A1A2B17FC9CD300E00ED8 /* libz.dylib in Frameworks */,
-				A11CD70D17FA230600A2D1B1 /* QuartzCore.framework in Frameworks */,
-				A163E8AB16F3F6AA0094D68B /* Security.framework in Frameworks */,
 				A1C32D5117A06544000A904E /* AddressBook.framework in Frameworks */,
 				A1C32D5017A06538000A904E /* AddressBookUI.framework in Frameworks */,
 				D2AEACDC16C426DA00C364C0 /* CFNetwork.framework in Frameworks */,
@@ -3598,6 +3626,14 @@
 		D221A08C169C9E5E00537ABF /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				7BC29A1A2627BC8100246C8E /* VideoToolbox.framework */,
+				7BC29A182627BC6300246C8E /* OpenGLES.framework */,
+				7BC29A0F2627BC5B00246C8E /* libxml2.tbd */,
+				7BC29A062627BC5300246C8E /* libiconv.tbd */,
+				7BC299FD2627BC4B00246C8E /* libc++.tbd */,
+				7BC299F42627BC4000246C8E /* libbz2.tbd */,
+				7BC299F22627BC3600246C8E /* CoreVideo.framework */,
+				7BC299F02627BC2E00246C8E /* CoreText.framework */,
 				C35E8AA22485C72300ACB629 /* SwiftCSV.framework */,
 				B847570023D568EB00759540 /* SignalServiceKit.framework */,
 				3496955F21A2FC8100DCFE74 /* CloudKit.framework */,

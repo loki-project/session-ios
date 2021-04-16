@@ -587,8 +587,8 @@ extension ConversationVC : InputViewDelegate, MessageCellDelegate, ContextMenuAc
         let audioPlayer = OWSAudioPlayer(mediaUrl: url, audioBehavior: .audioMessagePlayback, delegate: viewItem)
         self.audioPlayer = audioPlayer
         audioPlayer.owner = viewItem
-        audioPlayer.play()
         audioPlayer.setCurrentTime(Double(viewItem.audioProgressSeconds))
+        audioPlayer.play()
     }
 
     func speedUpAudio(for viewItem: ConversationViewItem) {

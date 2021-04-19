@@ -520,7 +520,7 @@ typedef void (^OWSLoadedThumbnailSuccess)(OWSLoadedThumbnail *loadedThumbnail);
     VLCMediaPlayer *audioPlayer = [[VLCMediaPlayer alloc] initWithOptions:nil];
     audioPlayer.media = [VLCMedia mediaWithURL:self.originalMediaURL];
     // This will block for at most 5s.
-    // Just need to see if it is too long to wait.
+    // Theoritically it won't block the thread since the media file is a local file.
     VLCTime *length = [audioPlayer.media lengthWaitUntilDate:[NSDate dateWithTimeIntervalSinceNow:5.0]];
     return length.intValue/1000;
 }

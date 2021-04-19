@@ -165,9 +165,9 @@ NS_ASSUME_NONNULL_BEGIN
     self.delegate.audioPlaybackState = AudioPlaybackState_Paused;
     [self.audioPlayer pause];
     [self.audioPlayerPoller invalidate];
-    int progressSeconds = self.audioPlayer.time.intValue/1000;
-    int durationSeconds = self.audioPlayer.media.length.intValue/1000;
-    [self.delegate setAudioProgress:(CGFloat)progressSeconds duration:(CGFloat)durationSeconds];
+    CGFloat progressSeconds = (CGFloat)self.audioPlayer.time.intValue/1000;
+    CGFloat durationSeconds = (CGFloat)self.audioPlayer.media.length.intValue/1000;
+    [self.delegate setAudioProgress:progressSeconds duration:durationSeconds];
 
     [self endAudioActivities];
     [DeviceSleepManager.sharedInstance removeBlockWithBlockObject:self];
@@ -205,9 +205,10 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)audioPlayerUpdated:(NSTimer *)timer
 {
-    int progressSeconds = self.audioPlayer.time.intValue/1000;
-    int durationSeconds = self.audioPlayer.media.length.intValue/1000;
-    [self.delegate setAudioProgress:(CGFloat)progressSeconds duration:(CGFloat)durationSeconds];
+    CGFloat progressSeconds = (CGFloat)self.audioPlayer.time.intValue/1000;
+    CGFloat durationSeconds = (CGFloat)self.audioPlayer.media.length.intValue/1000;
+    printf("Ryan: %f, %f", progressSeconds, durationSeconds);
+    [self.delegate setAudioProgress:progressSeconds duration:durationSeconds];
 }
 
 - (void)audioPlayerDidFinishPlaying:(AVAudioPlayer *)player successfully:(BOOL)flag

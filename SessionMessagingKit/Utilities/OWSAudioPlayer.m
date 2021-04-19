@@ -147,7 +147,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)setCurrentTime:(NSTimeInterval)currentTime
 {
-    [self.audioPlayer setPosition:(float)currentTime/(self.audioPlayer.media.length.intValue/1000)];
+    [self.audioPlayer setPosition:(float)currentTime/((float)self.audioPlayer.media.length.intValue/1000)];
 }
 
 - (float)getPlaybackRate
@@ -207,7 +207,6 @@ NS_ASSUME_NONNULL_BEGIN
 {
     CGFloat progressSeconds = (CGFloat)self.audioPlayer.time.intValue/1000;
     CGFloat durationSeconds = (CGFloat)self.audioPlayer.media.length.intValue/1000;
-    printf("Ryan: %f, %f", progressSeconds, durationSeconds);
     [self.delegate setAudioProgress:progressSeconds duration:durationSeconds];
 }
 

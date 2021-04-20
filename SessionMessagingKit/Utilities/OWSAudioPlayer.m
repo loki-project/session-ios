@@ -128,7 +128,7 @@ NS_ASSUME_NONNULL_BEGIN
     [[AVAudioSession sharedInstance] setCategory: AVAudioSessionCategoryPlayback error: nil];
 
     if (!self.audioPlayer) {
-        self.audioPlayer = [[VLCMediaPlayer alloc] initWithOptions:nil];
+        self.audioPlayer = [[VLCMediaPlayer alloc] init];
         self.audioPlayer.media = [VLCMedia mediaWithURL:self.mediaUrl];
         self.audioPlayer.delegate = self;
     }

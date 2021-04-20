@@ -70,6 +70,7 @@ NSString *const kSyncMessageFileExtension = @"bin";
             @"audio/3gpp" : @"3gp",
             @"audio/opus" : @"opus",
             @"audio/ogg" : @"ogg",
+            @"audio/webm" : @"webm",
         };
     });
     return result;

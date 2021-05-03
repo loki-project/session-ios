@@ -58,7 +58,9 @@ NSUInteger TSErrorMessageSchemaVersion = 1;
                           expiresInSeconds:0
                            expireStartedAt:0
                              quotedMessage:nil
-                               linkPreview:nil];
+                               linkPreview:nil
+                   openGroupInvitationName:nil
+                    openGroupInvitationURL:nil];
 
     if (!self) {
         return self;

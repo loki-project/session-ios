@@ -222,9 +222,6 @@ final class VisibleMessageCell : MessageCell, LinkPreviewViewDelegate {
             if let openGroupV2 = Storage.shared.getV2OpenGroup(for: thread.uniqueId!) {
                 let isUserModerator = OpenGroupAPIV2.isUserModerator(senderSessionID, for: openGroupV2.room, on: openGroupV2.server)
                 moderatorIconImageView.isHidden = !isUserModerator || profilePictureView.isHidden
-            } else if let openGroup = Storage.shared.getOpenGroup(for: thread.uniqueId!) {
-                let isUserModerator = OpenGroupAPI.isUserModerator(senderSessionID, for: openGroup.channel, on: openGroup.server)
-                moderatorIconImageView.isHidden = !isUserModerator || profilePictureView.isHidden
             } else {
                 moderatorIconImageView.isHidden = true
             }
@@ -348,7 +345,7 @@ final class VisibleMessageCell : MessageCell, LinkPreviewViewDelegate {
         case .mediaMessage:
             if viewItem.interaction is TSIncomingMessage,
                 let thread = viewItem.interaction.thread as? TSContactThread,
-                Storage.shared.getContact(with: thread.contactIdentifier())?.isTrusted != true {
+                Storage.shared.getContact(with: thread.contactSessionID())?.isTrusted != true {
                 showMediaPlaceholder()
             } else {
                 guard let cache = delegate?.getMediaCache() else { preconditionFailure() }
@@ -374,7 +371,7 @@ final class VisibleMessageCell : MessageCell, LinkPreviewViewDelegate {
         case .audio:
             if viewItem.interaction is TSIncomingMessage,
                 let thread = viewItem.interaction.thread as? TSContactThread,
-                Storage.shared.getContact(with: thread.contactIdentifier())?.isTrusted != true {
+                Storage.shared.getContact(with: thread.contactSessionID())?.isTrusted != true {
                 showMediaPlaceholder()
             } else {
                 let voiceMessageView = VoiceMessageView(viewItem: viewItem)
@@ -385,7 +382,7 @@ final class VisibleMessageCell : MessageCell, LinkPreviewViewDelegate {
         case .genericAttachment:
             if viewItem.interaction is TSIncomingMessage,
                 let thread = viewItem.interaction.thread as? TSContactThread,
-                Storage.shared.getContact(with: thread.contactIdentifier())?.isTrusted != true {
+                Storage.shared.getContact(with: thread.contactSessionID())?.isTrusted != true {
                 showMediaPlaceholder()
             } else {
                 let documentView = DocumentView(viewItem: viewItem, textColor: bodyLabelTextColor)

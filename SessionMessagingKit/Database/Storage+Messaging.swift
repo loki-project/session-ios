@@ -7,7 +7,7 @@ extension Storage {
         let transaction = transaction as! YapDatabaseReadWriteTransaction
         var threadOrNil: TSThread?
         if let openGroupID = openGroupID {
-            if let threadID = Storage.shared.v2GetThreadID(for: openGroupID) ?? Storage.shared.getThreadID(for: openGroupID),
+            if let threadID = Storage.shared.v2GetThreadID(for: openGroupID),
                 let thread = TSGroupThread.fetch(uniqueId: threadID, transaction: transaction) {
                 threadOrNil = thread
             }
@@ -16,7 +16,7 @@ extension Storage {
             let groupID = LKGroupUtilities.getEncodedClosedGroupIDAsData(groupPublicKey)
             threadOrNil = TSGroupThread.fetch(uniqueId: TSGroupThread.threadId(fromGroupId: groupID), transaction: transaction)
         } else {
-            threadOrNil = TSContactThread.getOrCreateThread(withContactId: publicKey, transaction: transaction)
+            threadOrNil = TSContactThread.getOrCreateThread(withContactSessionID: publicKey, transaction: transaction)
         }
         return threadOrNil?.uniqueId
     }

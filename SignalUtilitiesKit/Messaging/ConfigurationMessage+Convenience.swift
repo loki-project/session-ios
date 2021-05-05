@@ -27,8 +27,6 @@ extension ConfigurationMessage {
                 case .openGroup:
                     if let v2OpenGroup = storage.getV2OpenGroup(for: thread.uniqueId!) {
                         openGroups.insert("\(v2OpenGroup.server)/\(v2OpenGroup.room)?public_key=\(v2OpenGroup.publicKey)")
-                    } else if let openGroup = storage.getOpenGroup(for: thread.uniqueId!) {
-                        openGroups.insert(openGroup.server)
                     }
                 default: break
                 }
@@ -36,8 +34,8 @@ extension ConfigurationMessage {
             OWSUserProfile.enumerateCollectionObjects(with: transaction) { object, stop in
                 guard let profile = object as? OWSUserProfile, let displayName = profile.profileName else { return }
                 let publicKey = profile.recipientId
-                let threadID = TSContactThread.threadId(fromContactId: publicKey)
-                guard let thread = TSContactThread.fetch(uniqueId: threadID, transaction: transaction), thread.shouldThreadBeVisible
+                let threadID = TSContactThread.threadID(fromContactSessionID: publicKey)
+                guard let thread = TSContactThread.fetch(uniqueId: threadID, transaction: transaction), thread.shouldBeVisible
                     && !SSKEnvironment.shared.blockingManager.isRecipientIdBlocked(publicKey) else { return }
                 let profilePictureURL = profile.avatarUrlPath
                 let profileKey = profile.profileKey?.keyData

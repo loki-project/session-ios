@@ -789,4 +789,25 @@ static NSTimeInterval launchStartedAt;
     }];
 }
 
+# pragma mark - App Link
+- (BOOL)application:(UIApplication *)app
+            openURL:(NSURL *)incomingURL
+            options:(NSDictionary<UIApplicationOpenURLOptionsKey, id> *)options
+{
+    NSURLComponents *components = [[NSURLComponents alloc]  initWithURL:incomingURL resolvingAgainstBaseURL: true];
+    // URL Scheme is sessionmessenger://123456
+    // We can later add more parameters like message etc.
+    NSString *host = components.host;
+    UIViewController *viewController = self.window.rootViewController;
+    if([viewController class] == [OWSNavigationController class]){
+        UIViewController *rVC = ((OWSNavigationController *)viewController).visibleViewController;
+        if([rVC class] == [HomeVC class]){
+            HomeVC *homeVC = (HomeVC *)rVC;
+            [homeVC createNewDMWithSessionID: host];
+            return true;
+        }
+    }
+    return false;
+}
+
 @end
